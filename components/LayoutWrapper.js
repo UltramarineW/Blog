@@ -8,6 +8,7 @@ import ThemeSwitch from './ThemeSwitch'
 import NowPlaying from './NowPlaying'
 import Typewriter from 'typewriter-effect'
 import { useRouter } from 'next/router'
+import { twemoji } from 'twemoji'
 
 const LayoutWrapper = ({ children }) => {
   const router = useRouter()
@@ -17,7 +18,7 @@ const LayoutWrapper = ({ children }) => {
       <div className="flex flex-col justify-between h-screen">
         <header className="flex items-center justify-between py-6">
           <div>
-            <Link href="/" aria-label="Einar Gudni's website">
+            <Link href="/" aria-label="Ultramarine's website">
               <div className="flex items-center justify-between text-xl font-semibold text-primary-color dark:text-primary-color-dark">
                 {`~${router.asPath}`}{' '}
                 <Typewriter
@@ -47,7 +48,7 @@ const LayoutWrapper = ({ children }) => {
           </div>
         </header>
         <main className="relative mb-auto">{children}</main>
-        <NowPlaying />
+        {/* <NowPlaying /> */}
         <Footer />
       </div>
     </SectionContainer>

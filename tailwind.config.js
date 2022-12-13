@@ -21,7 +21,8 @@ module.exports = {
       colors: {
         'background-color': '#1F2023',
         'primary-color': '#1e90ff',
-        'primary-color-dark': '#FFFF66',
+        // 'primary-color-dark': '#FFFF66',
+        'primary-color-dark': '#c9e6ff',
         'spotify-green': '#1DB954',
         primary: colors.teal,
         gray: colors.neutral,

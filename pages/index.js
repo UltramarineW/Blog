@@ -27,13 +27,62 @@ export default function Home({ posts }) {
           <div className="flex items-center justify-between">
             <div className="">
               <h1 className="mb-2 text-2xl font-extrabold tracking-tight leading-11 text-slate-900 dark:text-slate-100 sm:text-4xl sm:leading-10 md:text-6xl md:leading-14">
-                I'm <span className="text-primary-color dark:text-primary-color-dark">Einar</span>,
-                a curious software developer who's trying to get a bit better every day
+                I'm{' '}
+                <span className="mb-8 text-4xl leading-[60px] font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-600 dark:bg-gradient-to-l dark:from-emerald-500 dark:to-lime-600 dark:text-primary-color-dark md:text-7xl md:leading-[86px]">
+                  UltramarineW
+                </span>
               </h1>
+              <h1 className="mb-2 text-xl font-extrabold tracking-tight leading-11 text-slate-900 dark:text-slate-100 sm:text-1xl sm:leading-10 md:text-2xl md:leading-14">
+                B.E. student of
+                <br />
+                <Link
+                  href={'https://www.hit.edu.cn'}
+                  className="text-slate-1000 dark:text-slate-200"
+                >
+                  <a className="underline decoration-sky-500 dark:primary-color-dark hover:decoration-blue-500 md:decoration-blue-400">
+                    Harbin Institute of Technology
+                  </a>
+                  .
+                </Link>
+              </h1>
+
+              <p className="text-lg leading-7 text-slate-600 dark:text-slate-300">
+                This is my place for{' '}
+                <RoughNotation
+                  type="underline"
+                  show={true}
+                  color="#fff176"
+                  animationDelay={800}
+                  animationDuration={1200}
+                >
+                  thoughts,{' '}
+                </RoughNotation>
+                <RoughNotation
+                  type="underline"
+                  show={true}
+                  color="#ADD8E6"
+                  animationDelay={1400}
+                  animationDuration={1200}
+                >
+                  reflections,{' '}
+                </RoughNotation>
+                &{' '}
+                <RoughNotation
+                  type="underline"
+                  show={true}
+                  color="#FF0000"
+                  animationDelay={1700}
+                  animationDuration={1200}
+                >
+                  everything{' '}
+                </RoughNotation>
+                in between
+              </p>
             </div>
+
             <div>
               <Image
-                src="/static/images/einar-avatar-new.jpg"
+                src="/static/images/jiayang-avatar-new.jpg"
                 alt="avatar"
                 width="384px"
                 height="384px"
@@ -42,38 +91,7 @@ export default function Home({ posts }) {
               />
             </div>
           </div>
-          <p className="text-lg leading-7 text-slate-600 dark:text-slate-300">
-            This is my place for{' '}
-            <RoughNotation
-              type="underline"
-              show={true}
-              color="#fff176"
-              animationDelay={800}
-              animationDuration={1200}
-            >
-              thoughts,{' '}
-            </RoughNotation>
-            <RoughNotation
-              type="underline"
-              show={true}
-              color="#ADD8E6"
-              animationDelay={1400}
-              animationDuration={1200}
-            >
-              reflections,{' '}
-            </RoughNotation>
-            &{' '}
-            <RoughNotation
-              type="underline"
-              show={true}
-              color="#FF0000"
-              animationDelay={1700}
-              animationDuration={1200}
-            >
-              everything{' '}
-            </RoughNotation>
-            in between
-          </p>
+
           <div className="flex justify-center w-full">
             <div className="justify-center mt-2">
               <ShortcutHome />

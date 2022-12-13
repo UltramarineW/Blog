@@ -1,27 +1,27 @@
 const siteMetadata = {
-  title: 'Hi!👋',
-  author: 'Einar Guðni Guðjónsson',
-  headerTitle: 'My website',
+  title: 'UltramarineW',
+  author: 'Wu Jiayang',
+  headerTitle: 'Ultramarine website',
   description: 'My online place for thoughts',
   language: 'en-us',
   theme: 'system', // system, dark or light
-  siteUrl: 'https://einargudni.com,',
-  siteRepo: 'https://github.com/einargudnig/personal-blog-v3',
+  siteUrl: 'https://wujiayang.netlife.app',
+  siteRepo: 'https://github.com/UltramarineW/Blog',
   siteLogo: '/static/images/logo.png',
-  image: '/static/images/einar-avatar.jpg',
+  image: '/static/images/jiayang-avatar.jpg',
   socialBanner: '/static/images/twittercard.png',
-  email: 'einargudnig@gmail.com',
-  github: 'https://github.com/einargudnig',
-  twitter: 'https://twitter.com/einargudni',
+  email: 'mailto:2021113679@stu.hit.edu.cn',
+  github: 'https://github.com/UltramarineW',
+  twitter: 'https://twitter.com/',
   facebook: 'https://facebook.com',
-  instagram: 'https://instagram.com/einargudni',
-  linkedin: 'https://www.linkedin.com/einargudni/',
-  locale: 'en-US',
+  instagram: 'https://instagram.com/',
+  linkedin: 'https://www.linkedin.com/',
+  locale: 'zh-CN',
   analytics: {
     // supports plausible, simpleAnalytics or googleAnalytics
     plausibleDataDomain: '', // e.g. tailwind-nextjs-starter-blog.vercel.app
     simpleAnalytics: false, // true or false
-    googleAnalyticsId: 'G-95HPC8T3GB', // e.g. UA-000000-2 or G-XXXXXXX
+    googleAnalyticsId: 'G-08CD29VC1Y', // e.g. UA-000000-2 or G-XXXXXXX
   },
   newsletter: {
     // supports mailchimp, buttondown, convertkit, klaviyo
