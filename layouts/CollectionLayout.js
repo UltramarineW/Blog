@@ -25,6 +25,26 @@ export default function CollectionLayout({ frontMatter, authorDetails, next, pre
     collection5Link,
     collection6,
     collection6Link,
+    collection7,
+    collection7Link,
+    collection8,
+    collection8Link,
+    collection9,
+    collection9Link,
+    collection10,
+    collection10Link,
+    collection11,
+    collection11Link,
+    collection12,
+    collection12Link,
+    collection13,
+    collection13Link,
+    collection14,
+    collection14Link,
+    collection15,
+    collection15Link,
+    collection16,
+    collection16Link,
   } = frontMatter
 
   return (
@@ -46,6 +66,7 @@ export default function CollectionLayout({ frontMatter, authorDetails, next, pre
               <div>
                 <PageTitle>{title}</PageTitle>
               </div>
+              <br />
               <div className="mt-12">
                 <div>This is a collection of interesting thing I discover on the internet.</div>
                 <div className="mt-8 text-sm font-medium leading-5 ">
@@ -190,6 +211,217 @@ export default function CollectionLayout({ frontMatter, authorDetails, next, pre
                               href={collection6Link}
                               className="text-primary-color dark:text-primary-color-dark hover:text-blue-600 dark:hover:text-yellow-300"
                               aria-label={`Read "${collection6}"`}
+                            >
+                              Read more &rarr;
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+                {/* Card #7 */}
+                {collection7 ? (
+                  <div className="p-4 md:w-1/2 md" style={{ maxWidth: '544px' }}>
+                    <div className="h-full overflow-hidden border-2 border-gray-200 rounded-md dark:border-gray-700 border-opacity-60">
+                      <div className="p-6">
+                        <div className="flex flex-col">
+                          <div className="text-lg font-semibold">{collection7}</div>
+                          <div className="mt-6">
+                            <Link
+                              href={collection7Link}
+                              className="text-primary-color dark:text-primary-color-dark hover:text-blue-600 dark:hover:text-yellow-300"
+                              aria-label={`Read "${collection7}"`}
+                            >
+                              Read more &rarr;
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+                {/* Card #8 */}
+                {collection8 ? (
+                  <div className="p-4 md:w-1/2 md" style={{ maxWidth: '544px' }}>
+                    <div className="h-full overflow-hidden border-2 border-gray-200 rounded-md dark:border-gray-700 border-opacity-60">
+                      <div className="p-6">
+                        <div className="flex flex-col">
+                          <div className="text-lg font-semibold">{collection8}</div>
+                          <div className="mt-6">
+                            <Link
+                              href={collection8Link}
+                              className="text-primary-color dark:text-primary-color-dark hover:text-blue-600 dark:hover:text-yellow-300"
+                              aria-label={`Read "${collection8}"`}
+                            >
+                              Read more &rarr;
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* Card #9 */}
+                {collection9 ? (
+                  <div className="p-4 md:w-1/2 md" style={{ maxWidth: '544px' }}>
+                    <div className="h-full overflow-hidden border-2 border-gray-200 rounded-md dark:border-gray-700 border-opacity-60">
+                      <div className="p-6">
+                        <div className="flex flex-col">
+                          <div className="text-lg font-semibold">{collection9}</div>
+                          <div className="mt-6">
+                            <Link
+                              href={collection9Link}
+                              className="text-primary-color dark:text-primary-color-dark hover:text-blue-600 dark:hover:text-yellow-300"
+                              aria-label={`Read "${collection9}"`}
+                            >
+                              Read more &rarr;
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+                {/* Card #10 */}
+                {collection10 ? (
+                  <div className="p-4 md:w-1/2 md" style={{ maxWidth: '544px' }}>
+                    <div className="h-full overflow-hidden border-2 border-gray-200 rounded-md dark:border-gray-700 border-opacity-60">
+                      <div className="p-6">
+                        <div className="flex flex-col">
+                          <div className="text-lg font-semibold">{collection10}</div>
+                          <div className="mt-6">
+                            <Link
+                              href={collection10Link}
+                              className="text-primary-color dark:text-primary-color-dark hover:text-blue-600 dark:hover:text-yellow-300"
+                              aria-label={`Read "${collection10}"`}
+                            >
+                              Read more &rarr;
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+                {/* Card #11 */}
+                {collection11 ? (
+                  <div className="p-4 md:w-1/2 md" style={{ maxWidth: '544px' }}>
+                    <div className="h-full overflow-hidden border-2 border-gray-200 rounded-md dark:border-gray-700 border-opacity-60">
+                      <div className="p-6">
+                        <div className="flex flex-col">
+                          <div className="text-lg font-semibold">{collection11}</div>
+                          <div className="mt-6">
+                            <Link
+                              href={collection11Link}
+                              className="text-primary-color dark:text-primary-color-dark hover:text-blue-600 dark:hover:text-yellow-300"
+                              aria-label={`Read "${collection11}"`}
+                            >
+                              Read more &rarr;
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+                {/* Card #12 */}
+                {collection12 ? (
+                  <div className="p-4 md:w-1/2 md" style={{ maxWidth: '544px' }}>
+                    <div className="h-full overflow-hidden border-2 border-gray-200 rounded-md dark:border-gray-700 border-opacity-60">
+                      <div className="p-6">
+                        <div className="flex flex-col">
+                          <div className="text-lg font-semibold">{collection12}</div>
+                          <div className="mt-6">
+                            <Link
+                              href={collection12Link}
+                              className="text-primary-color dark:text-primary-color-dark hover:text-blue-600 dark:hover:text-yellow-300"
+                              aria-label={`Read "${collection12}"`}
+                            >
+                              Read more &rarr;
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+                {/* Card #13 */}
+                {collection13 ? (
+                  <div className="p-4 md:w-1/2 md" style={{ maxWidth: '544px' }}>
+                    <div className="h-full overflow-hidden border-2 border-gray-200 rounded-md dark:border-gray-700 border-opacity-60">
+                      <div className="p-6">
+                        <div className="flex flex-col">
+                          <div className="text-lg font-semibold">{collection13}</div>
+                          <div className="mt-6">
+                            <Link
+                              href={collection13Link}
+                              className="text-primary-color dark:text-primary-color-dark hover:text-blue-600 dark:hover:text-yellow-300"
+                              aria-label={`Read "${collection13}"`}
+                            >
+                              Read more &rarr;
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+                {/* Card #14 */}
+                {collection14 ? (
+                  <div className="p-4 md:w-1/2 md" style={{ maxWidth: '544px' }}>
+                    <div className="h-full overflow-hidden border-2 border-gray-200 rounded-md dark:border-gray-700 border-opacity-60">
+                      <div className="p-6">
+                        <div className="flex flex-col">
+                          <div className="text-lg font-semibold">{collection14}</div>
+                          <div className="mt-6">
+                            <Link
+                              href={collection14Link}
+                              className="text-primary-color dark:text-primary-color-dark hover:text-blue-600 dark:hover:text-yellow-300"
+                              aria-label={`Read "${collection14}"`}
+                            >
+                              Read more &rarr;
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+                {/* Card #15 */}
+                {collection15 ? (
+                  <div className="p-4 md:w-1/2 md" style={{ maxWidth: '544px' }}>
+                    <div className="h-full overflow-hidden border-2 border-gray-200 rounded-md dark:border-gray-700 border-opacity-60">
+                      <div className="p-6">
+                        <div className="flex flex-col">
+                          <div className="text-lg font-semibold">{collection15}</div>
+                          <div className="mt-6">
+                            <Link
+                              href={collection15Link}
+                              className="text-primary-color dark:text-primary-color-dark hover:text-blue-600 dark:hover:text-yellow-300"
+                              aria-label={`Read "${collection15}"`}
+                            >
+                              Read more &rarr;
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+                {/* Card #16 */}
+                {collection16 ? (
+                  <div className="p-4 md:w-1/2 md" style={{ maxWidth: '544px' }}>
+                    <div className="h-full overflow-hidden border-2 border-gray-200 rounded-md dark:border-gray-700 border-opacity-60">
+                      <div className="p-6">
+                        <div className="flex flex-col">
+                          <div className="text-lg font-semibold">{collection16}</div>
+                          <div className="mt-6">
+                            <Link
+                              href={collection16Link}
+                              className="text-primary-color dark:text-primary-color-dark hover:text-blue-600 dark:hover:text-yellow-300"
+                              aria-label={`Read "${collection16}"`}
                             >
                               Read more &rarr;
                             </Link>

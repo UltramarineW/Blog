@@ -7,8 +7,10 @@ import formatDate from '@/lib/utils/formatDate'
 import { RoughNotation } from 'react-rough-notation'
 import Image from '@/components/Image'
 import ShortcutHome from '@/components/ShortcutHome'
-
 import NewsletterForm from '@/components/NewsletterForm'
+import Twemoji from '@/components/Twemoji'
+import SocialIcon from '@/components/social-icons'
+import HITIcon from '@/components/hit-logo-icons'
 
 const MAX_DISPLAY = 3
 
@@ -35,6 +37,8 @@ export default function Home({ posts }) {
               <h1 className="mb-2 text-xl font-extrabold tracking-tight leading-11 text-slate-900 dark:text-slate-100 sm:text-1xl sm:leading-10 md:text-2xl md:leading-14">
                 B.E. student of
                 <br />
+                {/* &nbsp;
+                <Twemoji size="twa-sp" emoji="hit-logo"/> */}
                 <Link
                   href={'https://www.hit.edu.cn'}
                   className="text-slate-1000 dark:text-slate-200"
@@ -42,7 +46,6 @@ export default function Home({ posts }) {
                   <a className="underline decoration-sky-500 dark:primary-color-dark hover:decoration-blue-500 md:decoration-blue-400">
                     Harbin Institute of Technology
                   </a>
-                  .
                 </Link>
               </h1>
 

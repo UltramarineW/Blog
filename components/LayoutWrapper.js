@@ -48,7 +48,6 @@ const LayoutWrapper = ({ children }) => {
           </div>
         </header>
         <main className="relative mb-auto">{children}</main>
-        {/* <NowPlaying /> */}
         <Footer />
       </div>
     </SectionContainer>

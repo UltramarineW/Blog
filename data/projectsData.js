@@ -1,13 +1,13 @@
 const projectsData = [
   {
-    title: 'Okteberfest22',
-    description: `Website for the 2022 Oktoberfest in Munich, Germany. Counter and a bingo card uilt with TypeScript.`,
+    title: '融优学堂自动化脚本',
+    description: `实现自动识别验证码、登录网页界面、自动识别未完成课程目录并开始学习未完成课程`,
     imgSrc: '',
-    href: 'https://oktoberfest22.vercel.app/',
-    github: 'https://github.com/einargudnig/oktoberfest22',
-    tech1: 'Next.js',
-    tech2: 'TailwindCSS',
-    tech3: 'Supabase',
+    href: '',
+    github: 'https://github.com/UltramarineW/RongYouXueTang-Automation-Script',
+    tech1: 'Python',
+    tech2: 'Selenium',
+    tech3: 'Edge',
   },
 ]
 
