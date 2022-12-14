@@ -29,7 +29,7 @@ export default function CommandBar(props) {
       shortcut: ['e'],
       keywords: 'send-email',
       section: 'General',
-      perform: () => window.open('mailto:einargudnig@gmail.com', '_blank'),
+      perform: () => window.open('mailto:1278519078@qq.com', '_blank'),
       icon: <i className="ri-mail-line" style={iconStyle} />,
     },
     {
@@ -38,7 +38,7 @@ export default function CommandBar(props) {
       shortcut: ['s'],
       keywords: 'view-source',
       section: 'General',
-      perform: () => window.open('https://github.com/einargudnig/einargudni.com', '_blank'),
+      perform: () => window.open('https://github.com/UltramarineW/Blog', '_blank'),
       icon: <i className="ri-braces-line" style={iconStyle} />,
     },
     {
@@ -92,18 +92,18 @@ export default function CommandBar(props) {
       shortcut: ['g'],
       keywords: 'go-github',
       section: 'Follow',
-      perform: () => window.open('https://github.com/einargudnig', '_blank'),
+      perform: () => window.open('https://github.com/UltramarineW', '_blank'),
       icon: <i className="ri-github-line" style={iconStyle} />,
     },
-    {
-      id: 'linkedin',
-      name: 'LinkedIn',
-      shortcut: ['l'],
-      keywords: 'go-linkedin',
-      section: 'Follow',
-      perform: () => window.open('https://linkedin.com/in/einargudni', '_blank'),
-      icon: <i className="ri-linkedin-line" style={iconStyle} />,
-    },
+    // {
+    //   id: 'linkedin',
+    //   name: 'LinkedIn',
+    //   shortcut: ['l'],
+    //   keywords: 'go-linkedin',
+    //   section: 'Follow',
+    //   perform: () => window.open('https://linkedin.com', '_blank'),
+    //   icon: <i className="ri-linkedin-line" style={iconStyle} />,
+    // },
   ]
 
   return (
