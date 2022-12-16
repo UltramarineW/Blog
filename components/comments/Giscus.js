@@ -28,6 +28,7 @@ const Giscus = ({ mapping }) => {
     script.setAttribute('data-emit-metadata', siteMetadata.comment.giscusConfig.metadata)
     script.setAttribute('data-theme', commentsTheme)
     script.setAttribute('crossorigin', 'anonymous')
+    script.setAttribute('data-input-position', 'top')
     script.async = true
 
     const comments = document.getElementById(COMMENTS_ID)
@@ -48,7 +49,11 @@ const Giscus = ({ mapping }) => {
 
   return (
     <div className="pt-6 pb-6 text-center text-gray-700 dark:text-gray-300">
-      {enableLoadComments && <button onClick={LoadComments}>Load Comments</button>}
+      {enableLoadComments && (
+        <button onClick={LoadComments} id="loadcommonts">
+          Load Comments
+        </button>
+      )}
       <div className="giscus" id={COMMENTS_ID} />
     </div>
   )
