@@ -1,0 +1,51 @@
+---
+title: 'ChatGPT背后的算法流程理解（李宏毅老师课程）'
+date: '2022-12-22'
+tags: ['ChatGPT', 'NLP']
+draft: false
+summary: '根据李宏毅老师的视频理解了一下训练的大致过程'
+---
+
+## 0x01 前言
+
+最近 ChatGPT 真的是很火的一个 demo， 最早是在 b 站看到有人发视频， 后来发现大家也都在注册和这个能大致和人类聊天相仿的 bot 进行一波互动，有点点好奇背后的原理是啥。上 youtube 一搜发现有李宏毅老师的讲解，果断就点进去看看。
+
+> 還沒玩過 Chat GPT 嗎? 連結在這裡 [https://chat.openai.com/chat](https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqa3pfUUsxYkRsbHdvX3lsX2hWckhyVndoWFZTd3xBQ3Jtc0trb0V0OUdLRmI0SUVZN3pDNkRPRnZqUTNfWEpOeEtMN3c0eHF5eGdTVXM2c3lhTjlsOGtkcld1SGhOa2cwWGpSTzZGQjE2VVN1TnpxVWRaOHZCTGtyblkwM29pWkIzRmFyNV9iX1NIUVg5Wm5ZOGdxdw&q=https%3A%2F%2Fchat.openai.com%2Fchat&v=e0aKI2GGZNg)
+>
+> Chat GPT 官方 Blog： [https://openai.com/blog/chatgpt/](https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqbWVZM2xONENLV3c0MVdRMGJEb0lpTzd0b3NBZ3xBQ3Jtc0tsSW9Nek9YMXI5cnItbWRlYXlQQWJUM0t6WGZ2cU54Y2xfU2lCXzR1UGFNTlRPUVZxNnpzZjhQSkxHLUF2X21wQWZ4ZzZTZUk0U0lRbU5RWmR4RmRkV1h2cmRzMUd2ankxZ0h5Q1dkUDBURmFSbC04SQ&q=https%3A%2F%2Fopenai.com%2Fblog%2Fchatgpt%2F&v=e0aKI2GGZNg)
+>
+> Instruct GPT 論文連結： [https://arxiv.org/abs/2203.02155](https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqblVBaHZYZEpuYUxtUjRfYlBwOFktZ3dzaG5GUXxBQ3Jtc0trazVGRmV2ZTBWemZoM0RtazE5WXJUWC1LR21GMlFhVGhwZ1J3dlU5T1BOcTBWOUFXQUNxTkZFM0ZiVGxlc051OHdPcFc5bHNmMEhzYmJvbXA4ekxnY1RNdEwzYUwwRWJoWFJKZk8tcDlQNWtSUVVPMA&q=https%3A%2F%2Farxiv.org%2Fabs%2F2203.02155&v=e0aKI2GGZNg)
+>
+> GPT-3 介紹 – 來自獵人暗黑大陸的模型： [https://youtu.be/DOG1L9lvsDY](https://www.youtube.com/watch?v=DOG1L9lvsDY&t=0s)
+>
+> INSIDE 以本影片為基礎撰寫的文章： [https://www.inside.com.tw/article/](https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqbldKNkRLMXFjbmZKMTdJTS14TUs4Tlh4MEd5Z3xBQ3Jtc0trd01BaFp1NVI4bDJpd3NOa2o2OGpsUzMzcmtuYzN1V183OEY5clJOSmpvNFZHampaaDA2WkhNVjZGa2xhVm52cU80RWNJQXg2LTVGdHlWVHZnN1dqaENqZ1dja3MyYm8tNGtvQkEycmU3Mk1qZkliMA&q=https%3A%2F%2Fwww.inside.com.tw%2Farticle%2F30032-chatgpt-possible-4-steps-training&v=e0aKI2GGZNg)
+>
+> 本影片投影片連結：[https://docs.google.com/presentation/...](https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqbnRBY2JGNmQtbWtQUk4zUUNkS0M1UzRxTFlhd3xBQ3Jtc0ttVGhLZTFRQW8tc29VOEdYVG92QkI4clFJbzNibU1UUE5KNDZETkpuY0liWXZyMjZKWnJJXzRBUzJqa2dOVHJvUDFrLVRzT2UteVFFUU5SZEcyZzZqYmdlSVdCbTFXTGlQYmVQaks5LVUtUzZnSGJndw&q=https%3A%2F%2Fdocs.google.com%2Fpresentation%2Fd%2F1vDT11ec_nY6P0o--NHq9col5XEE4tHBw%2Fedit%3Fusp%3Dsharing%26ouid%3D115046073158939078465%26rtpof%3Dtrue%26sd%3Dtrue&v=e0aKI2GGZNg)
+
+## 0x02 基本流程
+
+![d2](https://ultramarine-image.oss-cn-beijing.aliyuncs.com/img/d2.png)
+
+- **学习文字接龙**
+
+  - 在第一个部分中，ChatGPT 构建了一个 GPT(Generative Pre-trained Transformer) 模型，GPT 模型通过输入不完整的句子，然后去预测这个不完整的句子下一个字应该接什么。经过训练之后，就产生了一个基于文字的概率分布，输入相同的句子的时候，ChatGPT 每次能够从概率分布中 sample 出一个字接到该句子的后面。
+  - ![image-20221222203930451](https://ultramarine-image.oss-cn-beijing.aliyuncs.com/img/image-20221222203930451.png)
+  - 从网络上摘取的文章和句子进行训练，这个过程不用人工参与，也就是不用人工标注，只需要让 GPT 模型自行去学习参数。GPT 模型需要做的事情就是根据不完整的句子去预测下一个字是什么。
+  - 当模型通过一个一个字进行输出过后，就产生了最后的答案
+
+- **人类老师引导文字接龙**
+
+  - 上面产生的回答不一定能输出最好的回答，因为当机器面临一个问句的时候，模型既可以再继续输出一个问句，这就不是我们人类想要的答案，因此我们需要通过人类的引导去让模型意识到什么是好的回答。
+  - 因此在这个阶段就是需要通过人类的介入来让模型的回答更加趋于准确。因此需要人类来思考并问 GPT 问题， 最后还需要提供答案。
+  - 我们并不需要穷举所有的问题和答案， 因为这些问题的答案是 GPT 自己有能力产生的
+
+- **模仿人类老师喜好**
+
+  - 经过了上一个阶段，现在就让 GPT 模型自己产生答案（人类不提供给模型答案），然后人类在这个阶段去评判机器输出答案的好坏，并给予评分， 给高分或者给低分。
+  - 接下来就是去训练一个模仿老师的 model，这个 teacher model 的作用就是能够评判 GPT 模型所输出答案的好坏，并给出相对应的分数，这个模型就是要模仿人类的评分标准。
+  - ![image-20221222205035108](https://ultramarine-image.oss-cn-beijing.aliyuncs.com/img/image-20221222205035108.png)
+
+- **用强化学习的方法向模拟老师学习**
+
+  - 最后就是用强化学习让 GPT 向 teacher model， 也就是模拟的人类老师的模型去学习
+  - ![image-20221222205210234](https://ultramarine-image.oss-cn-beijing.aliyuncs.com/img/image-20221222205210234.png)
