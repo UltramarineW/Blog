@@ -12,7 +12,7 @@ import Twemoji from '@/components/Twemoji'
 import SocialIcon from '@/components/social-icons'
 import HITIcon from '@/components/hit-logo-icons'
 
-const MAX_DISPLAY = 3
+const MAX_DISPLAY = 5
 
 export async function getStaticProps() {
   const posts = await getAllFilesFrontMatter('blog')
@@ -101,6 +101,7 @@ export default function Home({ posts }) {
             </div>
           </div>
         </div>
+
         <ul className="divide-y divide-gray-200 dark:divide-gray-700">
           {!posts.length && 'No posts found.'}
           {posts.slice(0, MAX_DISPLAY).map((frontMatter) => {
