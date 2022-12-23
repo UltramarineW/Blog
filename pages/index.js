@@ -11,6 +11,7 @@ import NewsletterForm from '@/components/NewsletterForm'
 import Twemoji from '@/components/Twemoji'
 import SocialIcon from '@/components/social-icons'
 import HITIcon from '@/components/hit-logo-icons'
+import Typewriter from 'typewriter-effect'
 
 const MAX_DISPLAY = 5
 
@@ -96,9 +97,7 @@ export default function Home({ posts }) {
           </div>
 
           <div className="flex justify-center w-full">
-            <div className="justify-center mt-2">
-              <ShortcutHome />
-            </div>
+            <div className="justify-center mt-2">{/* <ShortcutHome /> */}</div>
           </div>
         </div>
 

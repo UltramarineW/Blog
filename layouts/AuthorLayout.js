@@ -45,6 +45,7 @@ export default function AuthorLayout({ children, frontMatter }) {
             <br />
             <p align="center">
               <a href="https://wakatime.com/@a44515da-e0d1-408a-b5c1-18be52fa4bdf">
+                <p>total code time since 2022.7.12</p>
                 <img
                   src="https://wakatime.com/badge/user/a44515da-e0d1-408a-b5c1-18be52fa4bdf.svg"
                   alt="Total     time coded since Jul 12 2022"
