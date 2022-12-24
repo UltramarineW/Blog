@@ -31,7 +31,7 @@ export default function Home({ posts }) {
             <div className="">
               <h1 className="mb-2 text-2xl font-extrabold tracking-tight leading-11 text-slate-900 dark:text-slate-100 sm:text-4xl sm:leading-10 md:text-6xl md:leading-14">
                 I'm{' '}
-                <span className="mb-8 text-4xl leading-[60px] font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-600 dark:bg-gradient-to-l dark:from-emerald-500 dark:to-lime-600 dark:text-primary-color-dark md:text-7xl md:leading-[86px]">
+                <span className="mb-8 text-4xl leading-[60px] font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-600 dark:bg-gradient-to-l dark:from-sky-400 dark:to-blue-600 md:text-7xl md:leading-[86px]">
                   UltramarineW
                 </span>
               </h1>

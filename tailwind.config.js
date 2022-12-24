@@ -19,11 +19,14 @@ module.exports = {
         sans: ['Outfit', ...defaultTheme.fontFamily.sans],
       },
       colors: {
-        'background-color': '#1F2023',
+        // 'background-color': '#1F2023',
+        'background-color': '#111827',
         'primary-color': '#1e90ff',
         // 'primary-color-dark': '#FFFF66',
-        'primary-color-dark': '#c9e6ff',
-        'spotify-green': '#1DB954',
+        // 'primary-color-dark': '#c9e6ff',
+        'primary-color-dark': '#35afe6',
+        'spotify-green': '#192333',
+        // 'dark-background-color': '#192333',
         primary: colors.teal,
         gray: colors.neutral,
       },
@@ -124,13 +127,16 @@ module.exports = {
               color: theme('colors.slate.100'),
             },
             pre: {
-              backgroundColor: theme('colors.gray.800'),
+              // backgroundColor: theme('colors.gray.800'),
+              backgroundColor: theme('colors.spotify-green'),
             },
             code: {
-              backgroundColor: theme('colors.gray.800'),
+              // backgroundColor: theme('colors.gray.800'),
+              backgroundColor: theme('colors.spotify-green'),
             },
             details: {
-              backgroundColor: theme('colors.gray.800'),
+              // backgroundColor: theme('colors.gray.800'),
+              backgroundColor: theme('colors.spotify-green'),
             },
             hr: { borderColor: theme('colors.gray.700') },
             'ol li:before': {
