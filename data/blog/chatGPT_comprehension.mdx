@@ -11,17 +11,15 @@ summary: '根据李宏毅老师的视频理解了一下训练的大致过程'
 
 最近 ChatGPT 真的是很火的一个 demo， 最早是在 b 站看到有人发视频， 后来发现大家也都在注册和这个能大致和人类聊天相仿的 bot 进行一波互动，有点点好奇背后的原理是啥。上 youtube 一搜发现有李宏毅老师的讲解，果断就点进去看看。
 
-> 還沒玩過 Chat GPT 嗎? 連結在這裡 [https://chat.openai.com/chat](https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqa3pfUUsxYkRsbHdvX3lsX2hWckhyVndoWFZTd3xBQ3Jtc0trb0V0OUdLRmI0SUVZN3pDNkRPRnZqUTNfWEpOeEtMN3c0eHF5eGdTVXM2c3lhTjlsOGtkcld1SGhOa2cwWGpSTzZGQjE2VVN1TnpxVWRaOHZCTGtyblkwM29pWkIzRmFyNV9iX1NIUVg5Wm5ZOGdxdw&q=https%3A%2F%2Fchat.openai.com%2Fchat&v=e0aKI2GGZNg)
+> 还没玩过 Chat GPT 吗? 链接在这里 [https://chat.openai.com/chat](https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqa3pfUUsxYkRsbHdvX3lsX2hWckhyVndoWFZTd3xBQ3Jtc0trb0V0OUdLRmI0SUVZN3pDNkRPRnZqUTNfWEpOeEtMN3c0eHF5eGdTVXM2c3lhTjlsOGtkcld1SGhOa2cwWGpSTzZGQjE2VVN1TnpxVWRaOHZCTGtyblkwM29pWkIzRmFyNV9iX1NIUVg5Wm5ZOGdxdw&q=https%3A%2F%2Fchat.openai.com%2Fchat&v=e0aKI2GGZNg)
 >
 > Chat GPT 官方 Blog： [https://openai.com/blog/chatgpt/](https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqbWVZM2xONENLV3c0MVdRMGJEb0lpTzd0b3NBZ3xBQ3Jtc0tsSW9Nek9YMXI5cnItbWRlYXlQQWJUM0t6WGZ2cU54Y2xfU2lCXzR1UGFNTlRPUVZxNnpzZjhQSkxHLUF2X21wQWZ4ZzZTZUk0U0lRbU5RWmR4RmRkV1h2cmRzMUd2ankxZ0h5Q1dkUDBURmFSbC04SQ&q=https%3A%2F%2Fopenai.com%2Fblog%2Fchatgpt%2F&v=e0aKI2GGZNg)
 >
-> Instruct GPT 論文連結： [https://arxiv.org/abs/2203.02155](https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqblVBaHZYZEpuYUxtUjRfYlBwOFktZ3dzaG5GUXxBQ3Jtc0trazVGRmV2ZTBWemZoM0RtazE5WXJUWC1LR21GMlFhVGhwZ1J3dlU5T1BOcTBWOUFXQUNxTkZFM0ZiVGxlc051OHdPcFc5bHNmMEhzYmJvbXA4ekxnY1RNdEwzYUwwRWJoWFJKZk8tcDlQNWtSUVVPMA&q=https%3A%2F%2Farxiv.org%2Fabs%2F2203.02155&v=e0aKI2GGZNg)
+> Instruct GPT 论文链接： [https://arxiv.org/abs/2203.02155](https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqblVBaHZYZEpuYUxtUjRfYlBwOFktZ3dzaG5GUXxBQ3Jtc0trazVGRmV2ZTBWemZoM0RtazE5WXJUWC1LR21GMlFhVGhwZ1J3dlU5T1BOcTBWOUFXQUNxTkZFM0ZiVGxlc051OHdPcFc5bHNmMEhzYmJvbXA4ekxnY1RNdEwzYUwwRWJoWFJKZk8tcDlQNWtSUVVPMA&q=https%3A%2F%2Farxiv.org%2Fabs%2F2203.02155&v=e0aKI2GGZNg)
 >
-> GPT-3 介紹 – 來自獵人暗黑大陸的模型： [https://youtu.be/DOG1L9lvsDY](https://www.youtube.com/watch?v=DOG1L9lvsDY&t=0s)
+> GPT-3 介绍 – 来自猎人黑暗大陆的模型： [https://youtu.be/DOG1L9lvsDY](https://www.youtube.com/watch?v=DOG1L9lvsDY&t=0s)
 >
-> INSIDE 以本影片為基礎撰寫的文章： [https://www.inside.com.tw/article/](https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqbldKNkRLMXFjbmZKMTdJTS14TUs4Tlh4MEd5Z3xBQ3Jtc0trd01BaFp1NVI4bDJpd3NOa2o2OGpsUzMzcmtuYzN1V183OEY5clJOSmpvNFZHampaaDA2WkhNVjZGa2xhVm52cU80RWNJQXg2LTVGdHlWVHZnN1dqaENqZ1dja3MyYm8tNGtvQkEycmU3Mk1qZkliMA&q=https%3A%2F%2Fwww.inside.com.tw%2Farticle%2F30032-chatgpt-possible-4-steps-training&v=e0aKI2GGZNg)
->
-> 本影片投影片連結：[https://docs.google.com/presentation/...](https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqbnRBY2JGNmQtbWtQUk4zUUNkS0M1UzRxTFlhd3xBQ3Jtc0ttVGhLZTFRQW8tc29VOEdYVG92QkI4clFJbzNibU1UUE5KNDZETkpuY0liWXZyMjZKWnJJXzRBUzJqa2dOVHJvUDFrLVRzT2UteVFFUU5SZEcyZzZqYmdlSVdCbTFXTGlQYmVQaks5LVUtUzZnSGJndw&q=https%3A%2F%2Fdocs.google.com%2Fpresentation%2Fd%2F1vDT11ec_nY6P0o--NHq9col5XEE4tHBw%2Fedit%3Fusp%3Dsharing%26ouid%3D115046073158939078465%26rtpof%3Dtrue%26sd%3Dtrue&v=e0aKI2GGZNg)
+> 视频中的 PPT 链接：[https://docs.google.com/presentation/...](https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqbnRBY2JGNmQtbWtQUk4zUUNkS0M1UzRxTFlhd3xBQ3Jtc0ttVGhLZTFRQW8tc29VOEdYVG92QkI4clFJbzNibU1UUE5KNDZETkpuY0liWXZyMjZKWnJJXzRBUzJqa2dOVHJvUDFrLVRzT2UteVFFUU5SZEcyZzZqYmdlSVdCbTFXTGlQYmVQaks5LVUtUzZnSGJndw&q=https%3A%2F%2Fdocs.google.com%2Fpresentation%2Fd%2F1vDT11ec_nY6P0o--NHq9col5XEE4tHBw%2Fedit%3Fusp%3Dsharing%26ouid%3D115046073158939078465%26rtpof%3Dtrue%26sd%3Dtrue&v=e0aKI2GGZNg)
 
 ## 0x02 基本流程
 

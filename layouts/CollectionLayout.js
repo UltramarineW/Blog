@@ -54,7 +54,7 @@ export default function CollectionLayout({ frontMatter, authorDetails, next, pre
       <article>
         <div>
           <header>
-            <div className="pb-10 space-y-1 text-center border-b border-gray-200 dark:border-gray-700">
+            <div className="pb-8 pt-8 space-y-1 text-center border-b border-gray-200 dark:border-gray-700">
               <dl>
                 <div>
                   <dt className="sr-only">Published on</dt>
@@ -63,13 +63,14 @@ export default function CollectionLayout({ frontMatter, authorDetails, next, pre
                   </dd>
                 </div>
               </dl>
-              <div>
+              <div className="pt-3">
                 <PageTitle>{title}</PageTitle>
               </div>
-              <br />
               <div className="mt-12">
-                <div>This is a collection of interesting thing I discover on the internet.</div>
-                <div className="mt-8 text-sm font-medium leading-5 ">
+                <div className="mt-3">
+                  This is a collection of interesting thing I discover on the internet.
+                </div>
+                <div className="mt-3 text-sm font-medium leading-5 ">
                   {tags && (
                     <div>
                       <div>
@@ -437,7 +438,6 @@ export default function CollectionLayout({ frontMatter, authorDetails, next, pre
         </div>
 
         {/* Start of Footer */}
-        <Comments frontMatter={frontMatter} />
         <footer>
           <div className="flex flex-col text-sm font-medium sm:flex-row sm:justify-between sm:text-base">
             {prev && (
@@ -462,6 +462,7 @@ export default function CollectionLayout({ frontMatter, authorDetails, next, pre
             )}
           </div>
         </footer>
+        <Comments frontMatter={frontMatter} />
       </article>
     </SectionContainer>
   )

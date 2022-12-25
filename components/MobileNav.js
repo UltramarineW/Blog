@@ -7,12 +7,12 @@ const MobileNav = () => {
 
   const onToggleNav = () => {
     setNavShow((status) => {
-      if (status) {
-        document.body.style.overflow = 'auto'
-      } else {
-        // Prevent scrolling
-        document.body.style.overflow = 'hidden'
-      }
+      // if (status) {
+      //   document.body.style.overflow = 'auto'
+      // } else {
+      //   // Prevent scrolling
+      //   document.body.style.overflow = 'hidden'
+      // }
       return !status
     })
   }

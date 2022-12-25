@@ -98,7 +98,7 @@ module.exports = {
             'ul li:before': {
               backgroundColor: theme('colors.gray.500'),
             },
-            strong: { color: theme('colors.gray.600') },
+            strong: { color: theme('colors.black.600') },
             blockquote: {
               color: theme('colors.gray.900'),
               borderLeftColor: theme('colors.gray.200'),

@@ -1,0 +1,146 @@
+---
+title: 'Code Test'
+date: '2022-12-25'
+tags: ['code', 'test']
+draft: false
+summary: 'This is a blog for code test'
+layout: 'PostSimple'
+---
+
+```c
+#include <iostream>
+#include <windows.h>
+#include <queue>
+#include <mutex>
+#include <future>
+#include "SThreadPool.h"
+struct CameraData
+{
+	int height;
+	int width;
+	int datasize;
+	std::unique_ptr<char[]> data;
+	UINT64 timestamps;
+};
+
+class Sensor
+{
+public:
+	Sensor();
+	~Sensor();
+
+
+	//相机回调，并在回调中将相机数据压入容器中//
+	friend int WINAPI s_ManagaGetImageCallBack(void* _context, void* _system, void* _data);
+
+	//从队列头部弹出数据并进行处理//
+	void t_ProcessDataQueue(void* para);
+
+	void SaveImage(std::shared_ptr<CameraData> data);
+	friend void t_SaveCameraImage(void* para, std::shared_ptr<CameraData> data);
+private:
+
+	//用来存储三台相机数据的容器//
+	std::mutex m_DataMtx_;
+	std::queue<std::shared_ptr<CameraData>> m_QueCamData_;
+	std::condition_variable m_DataVar_;
+	bool m_bQueExit_ = false;
+	std::shared_ptr<SThreadPool> m_Pool_;
+	std::future<void> m_fuProcessDataQue_;
+};
+
+
+
+Sensor::Sensor()
+{
+	m_fuProcessDataQue_ = std::async(std::launch::async, &Sensor::t_ProcessDataQueue, this, nullptr);
+
+	unsigned long hardwares = std::thread::hardware_concurrency();
+	m_Pool_ = std::make_shared<SThreadPool>(hardwares);
+}
+
+Sensor::~Sensor()
+{
+	{
+		std::unique_lock<std::mutex> locker(m_DataMtx_);
+		m_bQueExit_ = true;
+	}
+	m_DataVar_.notify_one();
+	m_fuProcessDataQue_.get();
+}
+
+int WINAPI s_ManagaGetImageCallBack(void* _context, void* _system, void* _data)
+{
+	Sensor* pThis = (Sensor*)_context;
+	std::shared_ptr<CameraData> data = std::make_shared<CameraData>();
+
+	//将从相机返回出来的数据组装成CameraData.....
+	{
+		std::unique_lock<std::mutex> lock(pThis->m_DataMtx_);
+		pThis->m_QueCamData_.push(data);
+	}
+	pThis->m_DataVar_.notify_one();//通知另外一个线程进行数据的处理
+	return 0;
+}
+
+void Sensor::t_ProcessDataQueue(void* para)
+{
+	std::shared_ptr<CameraData> tempdata;
+
+
+	std::unique_lock<std::mutex> locker(m_DataMtx_);
+	while (true)
+	{
+		try
+		{
+			if (!m_bQueExit_) m_DataVar_.wait(locker);
+			locker.unlock();
+			while (true)
+			{
+				locker.lock();
+				if (m_QueCamData_.empty())
+				{
+					std::cout << "camera set queue is empty.\n";
+					break;
+				}
+				else
+				{
+					tempdata = m_QueCamData_.front();
+					m_QueCamData_.pop();
+				}
+				locker.unlock();
+
+				//process  camera data//
+				//01 单线程方式存数据
+				SaveImage(tempdata);
+
+				//02 多线程的方式存数据//
+				m_Pool_->enqueue(t_SaveCameraImage, this, tempdata);
+			}
+		}
+		catch (const std::exception& e)
+		{
+			std::cout << e.what() << "\n";
+		}
+
+
+		if (m_bQueExit_)
+		{
+			break;
+		}
+	}
+}
+
+
+void Sensor::SaveImage(std::shared_ptr<CameraData> data)
+{
+	//保存相机数据
+	//do want you want
+}
+
+void t_SaveCameraImage(void* para, std::shared_ptr<CameraData> data)
+{
+	//保存相机数据
+	//do want you want
+}
+```
