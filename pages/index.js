@@ -115,8 +115,8 @@ export default function Home({ posts }) {
                         <time dateTime={date}>{formatDate(date)}</time>
                       </dd>
                     </dl>
-                    <div className="space-y-5 xl:col-span-3">
-                      <div className="space-y-6">
+                    <div className="space-y-4 xl:col-span-3">
+                      <div className="space-y-3">
                         <div>
                           <h2 className="text-2xl font-bold leading-8 tracking-tight">
                             <Link
@@ -126,9 +126,9 @@ export default function Home({ posts }) {
                               {title}
                             </Link>
                           </h2>
-                          <div className="flex flex-wrap">
+                          <div className="flex flex-wrap pt-4">
                             {tags.map((tag) => (
-                              <Tag key={tag} text={tag} />
+                              <Tag key={tag} text={'#' + tag} />
                             ))}
                           </div>
                         </div>

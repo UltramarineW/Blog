@@ -76,7 +76,7 @@ export default function CollectionLayout({ frontMatter, authorDetails, next, pre
                       <div>
                         <span className="mr-3">Tags: </span>
                         {tags.map((tag) => (
-                          <Tag key={tag} text={tag} />
+                          <Tag key={tag} text={'#' + tag} />
                         ))}
                       </div>
                     </div>
