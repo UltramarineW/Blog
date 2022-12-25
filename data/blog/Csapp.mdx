@@ -1,0 +1,1839 @@
+---
+title: '哈工大计算机系统大作业 HELLO的一生'
+date: '2022-12-25'
+tags: ['caspp', 'computer-system', 'compilation', 'assembly', 'processes', 'links']
+draft: false
+summary: '本文串联计算机系统所学知识，以hello.c程序为例，阐述它在linux系统x86-64环境下从编写到运行终止的一生历程，主要包括预处理、编译、汇编、链接、进程管理、存储管理、IO管理，深入计算机系统底层，掌握计算机的信息表示及处理、程序的机器级表示、处理器体系结构、存储器层次结构、链接过程、异常控制流、虚拟内存等知识。'
+---
+
+<TOCInline toc={props.toc} asDisclosure toHeading={3} />
+
+## 摘 要
+
+本文串联计算机系统所学知识，以 hello.c 程序为例，阐述它在 linux 系统 x86-64 环境下从编写到运行终止的一生历程，主要包括预处理、编译、汇编、链接、进程管理、存储管理、IO 管理，深入计算机系统底层，掌握计算机的信息表示及处理、程序的机器级表示、处理器体系结构、存储器层次结构、链接过程、异常控制流、虚拟内存等知识。
+
+**关键词**：计算机系统；编译；汇编；链接；进程
+
+## 第 1 章 概述
+
+### 1.1 Hello 简介
+
+P2P 是指 from program to progress。其中 program 指用户在编辑器或 IDE 中输入的代码，而 process 是指在 Linux 中，hello.c 经过 cpp 程序的预处理成为文本文件 hello.i，通过 ccl 程序编译成汇编文件 hello.s，利用 as 程序汇编成为可重定位目标文件 hello.o，最终经过 ld 程序的链接，成为可执行的二进制 hello。
+
+020 是指 from zero to zero。需要执行程序时，在 shell 进程中输入程序的名称。在操作系统进程管理下，父进程 shell 通过 fork 函数产生子进程，通过 execve 函数加载并运行程序，进行虚拟内存的映射，通过 mmap 分配时间片，最终在内存中存储指令和数据。CPU 在.text 段中读取指令，通过取指，译码，执行，访存，写回，更新 PC 的操作逐条执行指令。运行结束后，shell 父进程回收 hello 进程，之后 shell 将不会存储此进程的任何相关信息。
+
+### 1.2 环境与工具
+
+CPU：Intel® Core™ i7-10850H @2.7GHz(64 位)
+
+L1 cache:32KB per core； L2 cache: 256KB per core； L3 cache 12MB
+
+内存：32GB
+
+磁盘：三星 980pro 2T
+
+软件环境：windows \\ windows subsystem of linux 2 (Ubuntu 20.04 linux core version: 5.15.68.1-microsoft-standard-WSL2)
+
+工具：gcc, gdb, vim, clion, readelf, gdb, odjbomb 等
+
+### 1.3 中间结果
+
+<table>
+  <tbody>
+    <tr>
+      <td>
+        {' '}
+        <p>hello.c</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>编写的hello.c代码文件</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>hello.i</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>hello.c经过预处理得到的文件</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>hello.s</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>hello.i经过编译得到的文件</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>hello.o</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>hello.s经过汇编得到的二进制可重定位目标文件</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>hello</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>hello.o经过链接得到的可执行文件</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>hello_o.asm</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>对hello.o进行反汇编得到的文件</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>hello.asm</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>对hello进行反汇编得到的文件</p>{' '}
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+### 1.4 hello.c 文件内容
+
+```c
+// 大作业的 hello.c 程序
+	// gcc -m64 -Og -no-pie -fno-stack-protector -fno-PIC hello.c -o hello
+	// 程序运行过程中可以按键盘，如不停乱按，包括回车，Ctrl-Z，Ctrl-C等。
+	// 可以 运行 ps  jobs  pstree fg 等命令
+
+	#include <stdio.h>
+	#include <unistd.h>
+	#include <stdlib.h>
+
+	int main(int argc,char *argv[]){
+	    int i;
+
+	    if(argc!=4){
+	        printf("用法: Hello 学号 姓名 秒数！\n");
+	        exit(1);
+	    }
+	    for(i=0;i<9;i++){
+	        printf("Hello %s %s\n",argv[1],argv[2]);
+	        sleep(atoi(argv[3]));
+	    }
+	    getchar();
+	    return 0;
+    }
+```
+
+### 1.5 本章小结
+
+本章对 hello 程序中 P2P、020 的概念进行阐述，并说明 hello 程序运行的硬件环境、软件环境、计算机体系结构，最后对论文中间产生的文件进行描述。
+
+## 第 2 章 预处理
+
+### 2.1 预处理的概念与作用
+
+**概念**：预处理是指在程序编译之前对源文件进行的初步处理。预处理读入程序源代码，检测包含的预处理语句（如\#开头的语句与宏定义），并进行相应的处理转化，删除多余的注释等处理。
+
+**作用**：
+
+1. 通过预处理拓展源代码，插入所有\#include 指令所指定的文件
+
+2. 拓展所有\#define 所定义的宏，又称为宏展开
+
+3. 根据\#if 以及\#endif 和\#ifdef 以及\#ifndef 后面的条件决定编译的代码
+
+4. 删除文件中的注释和空白符号。
+
+### 2.2 在 Ubuntu 下预处理的命令
+
+<div align="center">
+  ![image_4c0e3351.png](https://www.liangtengyu.com:9998/images/image_4c0e3351.png) 图2-1
+  利用gcc程序将hello.c编译成hello.i文件
+  ![image_6c852097.png](https://www.liangtengyu.com:9998/images/image_6c852097.png) 图2-2
+  gcc帮助中关于-E选项的解释
+</div>
+
+### 2.3 Hello 的预处理结果解析
+
+<div align="center">
+  ![image_dae87461.png](https://www.liangtengyu.com:9998/images/image_dae87461.png)
+</div>
+
+<div align="center">图2-3 统计hello.c与hello.i文件的行数</div>
+
+如图 2-3 所示，经过预编译过程后，文件从 36 行拓展至 3060 行。在其中，文件中所有的注释已经消失。完成了对头文件的展开，对宏定义的替换等内容。
+
+从图 2-4 可以看出，在程序的前方为提取出 stdio.h 中程序所需要的头文件定义声明的部分，其中包含了其他头文件的展开以及 extern 引用外部符号的部分，以及利用 typedef 来定义变量类型别名。
+
+如图 2-5 所示从 3040 行开始为文件原始的内容，其中完成了注释的删除与宏定义的替换过程。
+
+<div align="center">
+![image_b3263561.png](https://www.liangtengyu.com:9998/images/image_b3263561.png)  
+图 2-4 编译出的hello.i文件的外部头文件引用
+
+![image_c0ea4035.png](https://www.liangtengyu.com:9998/images/image_c0ea4035.png)
+图 2-5 编译出的 hello.i 文件的原内容部
+
+</div>
+
+### 2.4 本章小结
+
+本章主要介绍了程序预编译的处理流程与处理内容，介绍了程序从源文件到预处理程序的指令与对应的宏内容替换、\#if 的处理、无关项的去除等处理内容。
+
+## 第 3 章 编译
+
+### 3.1 编译的概念与作用
+
+**概念**：编译是把通常为高级语言的源代码（这里指经过预处理而生成的 hello.i）到能直接被计算机或虚拟机执行的目标代码（这里指汇编文件 hello.s）的翻译过程。
+
+**作用**：
+
+1. 词法分析，词法分析器读入组成源程序的字符流并将其组成有意义的词素 的序列，即将字符序列转换为单词序列的过程。
+
+2. 语法分析，语法分析器使用词法分析器生成的各词法单元的第一个分类来 创建树形的中间表示，在词法分析的基础上将单词序列组合成各类语法短语。该中间表示给出了词法分析产生的词法单元的语法结构，常用的表示方法为语法树。
+
+3. 语义分析，语义分析器使用语法树和符号表中的信息来检查源程序是否和 语言定义的语义一致，它同时收集类型信息，并存放在语法树或符号表中， 为代码生成阶段做准备。
+
+4. 代码生成和优化，在源程序的语法分析和语义分析完成后，会生成一个明 确的低级的或类及其语言的中间表示。代码优化试图改进中间代码，生成 执行所需要时间和空间更少。最后代码生成以中间表示形式为输入，并把它映射为目标语言。
+
+### 3.2 在 Ubuntu 下编译的命令
+
+<div align="center">
+![image_a068e499.png](https://www.liangtengyu.com:9998/images/image_a068e499.png)
+
+图 3-1 利用 gcc 程序将 hello.i 编译成 hello.s 文件
+
+![image_a53904ed.png](https://www.liangtengyu.com:9998/images/image_a53904ed.png)
+
+图 3-2 利用 gcc 中有关将程序编译成汇编文件的解释
+
+</div>
+
+### 3.3 Hello 的编译结果解析
+
+（1）文件内容的解析
+
+对 hello.i 执行 gcc 命令后，生成的 hello.s 文件如下
+
+```asm
+.file   "hello.c"
+    .text
+    .section    .rodata
+    .align 8
+.LC0:
+    .string "\347\224\250\346\263\225: Hello \345\255\246\345\217\267 \345\247\223\345\220\215 \347\247\222\346\225\260\357\274\201"
+.LC1:
+    .string "Hello %s %s\n"
+    .text
+    .globl  main
+    .type   main, @function
+main:
+.LFB6:
+    .cfi_startproc
+    endbr64
+    pushq   %rbp
+    .cfi_def_cfa_offset 16
+    .cfi_offset 6, -16
+    movq    %rsp, %rbp
+    .cfi_def_cfa_register 6
+    subq    $32, %rsp
+    movl    %edi, -20(%rbp)
+    movq    %rsi, -32(%rbp)
+    cmpl    $4, -20(%rbp)
+    je  .L2
+    leaq    .LC0(%rip), %rdi
+    call    puts@PLT
+    movl    $1, %edi
+    call    exit@PLT
+.L2:
+    movl    $0, -4(%rbp)
+    jmp .L3
+.L4:
+    movq    -32(%rbp), %rax
+    addq    $16, %rax
+    movq    (%rax), %rdx
+    movq    -32(%rbp), %rax
+    addq    $8, %rax
+    movq    (%rax), %rax
+    movq    %rax, %rsi
+    leaq    .LC1(%rip), %rdi
+    movl    $0, %eax
+    call    printf@PLT
+    movq    -32(%rbp), %rax
+    addq    $24, %rax
+    movq    (%rax), %rax
+    movq    %rax, %rdi
+    call    atoi@PLT
+    movl    %eax, %edi
+    call    sleep@PLT
+    addl    $1, -4(%rbp)
+.L3:
+    cmpl    $8, -4(%rbp)
+    jle .L4
+    call    getchar@PLT
+    movl    $0, %eax
+    leave
+    .cfi_def_cfa 7, 8
+    ret
+    .cfi_endproc
+.LFE6:
+    .size   main, .-main
+    .ident  "GCC: (Ubuntu 9.4.0-1ubuntu1~20.04.1) 9.4.0"
+    .section    .note.GNU-stack,"",@progbits
+    .section    .note.gnu.property,"a"
+    .align 8
+    .long    1f - 0f
+    .long    4f - 1f
+    .long    5
+0:
+    .string  "GNU"
+1:
+    .align 8
+    .long    0xc0000002
+    .long    3f - 2f
+2:
+    .long    0x3
+3:
+    .align 8
+4:
+```
+
+表 3-1 hello.s 文件中的标记符号解析
+
+<table>
+  <tbody>
+    <tr>
+      <td>
+        {' '}
+        <p>.file</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>
+          <strong>文件命名</strong>
+        </p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.text</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>代码段</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.section .rodata</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>只读数据段</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.align</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>对齐方式</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.global</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>全局变量</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.type</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>类型</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.long</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>long类型变量</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.string</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>字符串类型变量</p>{' '}
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+（2）数据部分
+
+i. 常量数据
+
+hello.s 中的 printf 打印的字符串“用法: Hello 学号 姓名 秒数 \\n”被存储 .rodata 的.LC0 中。而后续打印的字符串“Hello %s %s\\n”同样存储在.rodata 中，被存放在.LC1 节中。而 hello.s 中的其他数字常量则在编译阶段作为立即数在汇编代码段中出现。
+
+<div align="center">
+  ![image_3037f20d.png](https://www.liangtengyu.com:9998/images/image_3037f20d.png)
+</div>
+
+ii. 变量与运算
+
+对于程序而言，初始化的全局变量存储在.data 中，没有被初始化的全局变量存储在.bss 中。而局部变量一般存储在寄存器或者栈中。
+
+<div align="center">
+  ![image_634aaa32.png](https://www.liangtengyu.com:9998/images/image_634aaa32.png)
+</div>
+
+对于 hello 的程序，程序中没有出现全局变量；而对于局部变量有一变量 i。i 作为循环体 i 中的循环变量。从汇编代码第 51 行中可以看出，循环变量 i 存储在.bss 中。而局部变量一般存储在寄存器或者栈中
+
+<div align="center">
+  ![image_bd9086aa.png](https://www.liangtengyu.com:9998/images/image_bd9086aa.png)
+</div>
+
+iii. 算术操作
+
+在上书的 for 循环中，局部变量 i 的值每次加 1，这个运算由 addl 来完成。
+
+iv. 数组操作
+
+对于数组而言，在《深入理解计算机系统》中解释的访问方式如下
+
+<div align="center">
+  ![image_2ac3eabe.png](https://www.liangtengyu.com:9998/images/image_2ac3eabe.png)
+</div>
+
+main 函数的参数中，有一个字符串数组 argv，用来存放用户属于的程序名字与输入的程序参数。
+
+<div align="center">
+  ![image_3103c628.png](https://www.liangtengyu.com:9998/images/image_3103c628.png)
+</div>
+
+我们在源程序中找到有关于 argv 访问的内容
+
+<div align="center">
+  ![image_09909786.png](https://www.liangtengyu.com:9998/images/image_09909786.png)
+</div>
+
+找到对应的汇编代码段，可以看出，%rdi 是第一个参数寄存器，也就是存储函数 atoi 调用的参数。argv 的首地址保存在地址为-32(%rbp)的栈中。在引用的时候，通过对地址进行加法运算调用，先让%rax 指向数组的首地址，然后加上偏移量，再解引用，这用就调用了数组。所以栈中的%rbp-8 指向的栈空间存的内容就是 argv\[3\]的地址。
+
+<div align="center">
+  ![image_70eca3e6.png](https://www.liangtengyu.com:9998/images/image_70eca3e6.png)
+</div>
+
+（3）控制流程  
+本段程序中用到的控制流程主要是循环和判断，因此针对以下代码段进行分析。
+
+<div align="center">
+  ![image_fcedebab.png](https://www.liangtengyu.com:9998/images/image_fcedebab.png)
+</div>
+
+其对应的汇编代码段为：
+
+<div align="center">
+  ![image_863b2222.png](https://www.liangtengyu.com:9998/images/image_863b2222.png)
+</div>
+
+（4）函数的调用和返回
+
+<div align="center">
+  ![image_4ec4da30.png](https://www.liangtengyu.com:9998/images/image_4ec4da30.png)
+</div>
+
+在汇编语言中调用函数的时候会进行程序栈的切换，通过寄存器%rdi, %rsi, %rdx, %rcx, %r8, %r9 与栈来传递函数的参数，而函数的返回值利用%rax 来存储。在调用函数的时候先将当前函数的返回值压入栈中，然后将栈指针减少以扩展新的程序栈，进行新的程序栈的构造。
+
+i. main 函数
+
+main 函数的传入参数为 argc 与 argv。这两个变量从 shell 的输入中获得，通过 shell 程序的解析得到两个参数的值，在 main 函数结束的时候，通过 return 0；得到 0 的返回值。
+
+ii. printf 函数
+
+<div align="center">
+  ![image_25440456.png](https://www.liangtengyu.com:9998/images/image_25440456.png)
+</div>
+
+printf 函数的第一个参数为一个字符串，用来存放打印信息，而后续的参数是在字符串中所有要打印的变量的值。
+
+在调用函数之前，将.LC1(%rip)的值，也就是“Hello 吴嘉阳 2021113679”de 的首地址传递给%rdi。
+
+iii. atoi 函数
+
+将一个字符串的首地址给%rdi 调用，函数返回这个字符串所转成的整数值，存放在%eax 中。
+
+<div align="center">
+  ![image_59630ad6.png](https://www.liangtengyu.com:9998/images/image_59630ad6.png)
+</div>
+
+iv. exit 函数
+
+<div align="center">
+  ![image_ba024d8e.png](https://www.liangtengyu.com:9998/images/image_ba024d8e.png)
+</div>
+
+对于 exit 函数，传递参数的过程就是将寄存器%edi 的值赋为 1，然后调用函数。
+
+v. 函数的调用和返回的过程
+
+main 函数由系统调用，首先在运行时通过动态链接，调用 libc 库里的注册函数\_\_libc_start_main，然后这个函数会执行初始化函数，执行\_\_init，注册退出处理程序，再调用 main 函数。由指令 call printf@PLT 调用 printf 函数，先将该指令的下一条指令的地址压入栈中作为返回地址。对于函数返回的过程，main 函数结束的时候，将$eax 的值设置为 0，然后调用 leave。leave 相当于调用 mov %rbp, %rsp 和 pop %rbp， 将栈恢复为最初的状态，然后调用 ret 返回。
+
+<div align="center">
+  ![image_b24df9da.png](https://www.liangtengyu.com:9998/images/image_b24df9da.png)
+</div>
+
+而其他函数返回的时候，将栈恢复为该函数之前的状态，此时栈顶的元素就是调用该函数的指令的下一条指令的地址，然后执行下一条指令即可。
+
+### 3.4 本章小结
+
+本章从 hello.i 到 hello.s，对程序进行汇编操作，对于常量，编译器将其存放到特定的位置，记录一些信息。程序中的语句，编译器通过寄存器、栈的结构进行赋值，分支语句通过 je jle 等进行操作，每种语句都有对应的实现方法，程序中的函数，如果不是库函数，就会对函数进行逐句的语法分析和解析，如果是库函数，则会直接进行 call 调用。汇编语言相对于高级语言更靠近底层机器，直接面对硬件，汇编语言具有机器相关性、高速度和高效率，编写和调试的复杂性等特性。
+
+## 第 4 章 汇编
+
+### 4.1 汇编的概念与作用
+
+概念：编译完成生成 hello.s 文件后，驱动程序运行汇编器 as，将 hello.s 翻译成一个 可重定位目标文件 hello.o，这个过程就是汇编。
+
+作用：
+
+主要就是将编译的结果 hello.s 转化为机器可识别并执行二进制文件。
+
+### 4.2 在 Ubuntu 下汇编的命令
+
+<div align="center">
+  ![image_3c31a56f.png](https://www.liangtengyu.com:9998/images/image_3c31a56f.png)
+</div>
+
+<div align="center">图3-1 利用gcc程序将hello.s编译成hello.o文件</div>
+
+<div align="center">
+  ![image_f102b81b.png](https://www.liangtengyu.com:9998/images/image_f102b81b.png)
+</div>
+
+<div align="center">图3-1 利用gcc程序中有关-c参数的解释</div>
+
+### 4.3 可重定位目标 elf 格式
+
+（1）可重定位目标文件 ELF 格式简介
+
+<table>
+  <tbody>
+    <tr>
+      <td>
+        {' '}
+        <p>ELF头</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>包括16字节标识信息、文件类型、机器类型、节头表的偏移、表项大小以及个数</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.text节</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>编译后的代码部分</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.rodata节</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>制度数据</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.data节</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>已初始化的全局和静态C变量</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.bss</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>未初始化的全局和静态变量</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.symtab节</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>符号表，存放在程序中定义和引用的函数和全局变量的信息</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.rel.txt节</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>一个.text节中位置的列表</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.debug节</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>一个调试符号表，条目是程序中定义的局部变量和类型定义</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.strtab节</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>一个字符串表，内容包括.symtab和.debug节中的符号表，以及节头部中节的名字</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.line节</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>原始C源程序中的行号和.text节中机器指令之间的映射</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>Section header table （节头部表）</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>每个节的节名、偏移和大小</p>{' '}
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+（2）读取 hello.o 的 elf 信息
+
+在 shell 中运行 readelf 的程序可以打印出程序所有的 elf 文件信息与各个节的信息
+
+<div align="center">
+  ![image_93fff700.png](https://www.liangtengyu.com:9998/images/image_93fff700.png)
+</div>
+
+（3）分析 hello 各个节的信息
+
+ELF 头：以一个 16 字节的序列开始，这个序列描述了生成该文件的系统字的大小和字节顺序。剩下的部分包含帮助链接器语法分析和解释目标文件的信息。其中包括 ELF 头的大小、目标文件的类型（如课冲定位、可执行或者共享）、机器类型（如 x86_64）、节头部表的文件偏移，以及节头部表中的条目的大小和数量。
+
+```ELF64
+ELF Header:
+ Magic: 7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00
+ Class: ELF64
+ Data: 2's complement, little endian
+ Version: 1 (current)
+ OS/ABI: UNIX - System V
+ ABI Version: 0
+ Type: REL (Relocatable file)
+ Machine: Advanced Micro Devices X86-64
+ Version: 0x1
+ Entry point address: 0x0
+ Start of program headers: 0 (bytes into file)
+ Start of section headers: 1240 (bytes into file)
+ Flags: 0x0
+ Size of this header: 64 (bytes)
+ Size of program headers: 0 (bytes)
+ Number of program headers: 0
+ Size of section headers: 64 (bytes)
+ Number of section headers: 14
+ Section header string table index: 13
+```
+
+节头部表：
+
+详细标识了每个节的名称、类型、地址、偏移量、大小、读取权限、对齐方式等，如.text 节，类型为 PROGBITS，起始地址为 0，偏移量 0x40，大小为 0x92，属性为 AX，即可装入可执行，对齐方式为 1 字节
+
+```ELF
+
+Section Headers:
+ [Nr] Name Type Address Offset
+ Size EntSize Flags Link Info Align
+ [ 0] NULL 0000000000000000 00000000
+ 0000000000000000 0000000000000000 0 0 0
+ [ 1] .text PROGBITS 0000000000000000 00000040
+ 0000000000000092 0000000000000000 AX 0 0 1
+ [ 2] .rela.text RELA 0000000000000000 00000388
+ 00000000000000c0 0000000000000018 I 11 1 8
+ [ 3] .data PROGBITS 0000000000000000 000000d2
+ 0000000000000000 0000000000000000 WA 0 0 1
+ [ 4] .bss NOBITS 0000000000000000 000000d2
+ 0000000000000000 0000000000000000 WA 0 0 1
+ [ 5] .rodata PROGBITS 0000000000000000 000000d8
+ 0000000000000033 0000000000000000 A 0 0 8
+ [ 6] .comment PROGBITS 0000000000000000 0000010b
+ 000000000000002c 0000000000000001 MS 0 0 1
+ [ 7] .note.GNU-stack PROGBITS 0000000000000000 00000137
+ 0000000000000000 0000000000000000 0 0 1
+ [ 8] .note.gnu.propert NOTE 0000000000000000 00000138
+ 0000000000000020 0000000000000000 A 0 0 8
+ [ 9] .eh_frame PROGBITS 0000000000000000 00000158
+ 0000000000000038 0000000000000000 A 0 0 8
+ [10] .rela.eh_frame RELA 0000000000000000 00000448
+ 0000000000000018 0000000000000018 I 11 9 8
+ [11] .symtab SYMTAB 0000000000000000 00000190
+ 00000000000001b0 0000000000000018 12 10 8
+ [12] .strtab STRTAB 0000000000000000 00000340
+ 0000000000000048 0000000000000000 0 0 1
+ [13] .shstrtab STRTAB 0000000000000000 00000460
+ 0000000000000074 0000000000000000 0 0 1
+```
+
+.rel 重定位节
+
+在 ELF 表中有两个.rel 节，分别是.rela.text 和.rela.eh_frame。内容有偏移量、信息、类型、符号值、符号名称等等。在重定位节中可以看到符号名称有.rodata, puts, exit, printf, atoi, sleep, getchar
+
+```ELF
+Relocation section '.rela.text' at offset 0x388 contains 8 entries:
+ Offset Info Type Sym. Value Sym. Name + Addend
+00000000001c 000500000002 R\_X86\_64\_PC32 0000000000000000 .rodata - 4
+000000000021 000c00000004 R\_X86\_64\_PLT32 0000000000000000 puts - 4
+00000000002b 000d00000004 R\_X86\_64\_PLT32 0000000000000000 exit - 4
+000000000054 000500000002 R\_X86\_64\_PC32 0000000000000000 .rodata + 22
+00000000005e 000e00000004 R\_X86\_64\_PLT32 0000000000000000 printf - 4
+000000000071 000f00000004 R\_X86\_64\_PLT32 0000000000000000 atoi - 4
+000000000078 001000000004 R\_X86\_64\_PLT32 0000000000000000 sleep - 4
+000000000087 001100000004 R\_X86\_64\_PLT32 0000000000000000 getchar - 4
+
+Relocation section '.rela.eh\_frame' at offset 0x448 contains 1 entry:
+ Offset Info Type Sym. Value Sym. Name + Addend
+000000000020 000200000002 R\_X86\_64\_PC32 0000000000000000 .text + 0
+```
+
+.symtab 节
+
+存放在程序中定义和引用的函数和全局变量的信息，具体数据如下，其中存放了 main puts exit printf atoi aleep getchar 等函数的信息。
+
+```ELF
+Symbol table '.symtab' contains 18 entries:
+ Num: Value Size Type Bind Vis Ndx Name
+ 0: 0000000000000000 0 NOTYPE LOCAL DEFAULT UND
+ 1: 0000000000000000 0 FILE LOCAL DEFAULT ABS hello.c
+ 2: 0000000000000000 0 SECTION LOCAL DEFAULT 1
+ 3: 0000000000000000 0 SECTION LOCAL DEFAULT 3
+ 4: 0000000000000000 0 SECTION LOCAL DEFAULT 4
+ 5: 0000000000000000 0 SECTION LOCAL DEFAULT 5
+ 6: 0000000000000000 0 SECTION LOCAL DEFAULT 7
+ 7: 0000000000000000 0 SECTION LOCAL DEFAULT 8
+ 8: 0000000000000000 0 SECTION LOCAL DEFAULT 9
+ 9: 0000000000000000 0 SECTION LOCAL DEFAULT 6
+ 10: 0000000000000000 146 FUNC GLOBAL DEFAULT 1 main
+ 11: 0000000000000000 0 NOTYPE GLOBAL DEFAULT UND \_GLOBAL\_OFFSET\_TABLE\_
+ 12: 0000000000000000 0 NOTYPE GLOBAL DEFAULT UND puts
+ 13: 0000000000000000 0 NOTYPE GLOBAL DEFAULT UND exit
+ 14: 0000000000000000 0 NOTYPE GLOBAL DEFAULT UND printf
+ 15: 0000000000000000 0 NOTYPE GLOBAL DEFAULT UND atoi
+ 16: 0000000000000000 0 NOTYPE GLOBAL DEFAULT UND sleep
+ 17: 0000000000000000 0 NOTYPE GLOBAL DEFAULT UND getchar
+```
+
+### 4.4 Hello.o 的结果解析
+
+objdump -d -r hello.o 获得了 hello.o 的反汇编文件
+
+```assembly
+1.  hello.o: file format elf64-x86-64
+2.
+3.
+4.  Disassembly of section .text:
+5.
+6.  0000000000000000 <main>:
+7.   0: f3 0f 1e fa endbr64
+8.   4: 55 push %rbp
+9.   5: 48 89 e5 mov %rsp,%rbp
+10.  8: 48 83 ec 20 sub $0x20,%rsp
+11.  c: 89 7d ec mov %edi,-0x14(%rbp)
+12.  f: 48 89 75 e0 mov %rsi,-0x20(%rbp)
+13.  13: 83 7d ec 04 cmpl $0x4,-0x14(%rbp)
+14.  17: 74 16 je 2f <main+0x2f>
+15.  19: 48 8d 3d 00 00 00 00 lea 0x0(%rip),%rdi \# 20 <main+0x20>
+16.  1c: R\_X86\_64\_PC32 .rodata-0x4
+17.  20: e8 00 00 00 00 callq 25 <main+0x25>
+18.  21: R\_X86\_64\_PLT32 puts-0x4
+19.  25: bf 01 00 00 00 mov $0x1,%edi
+20.  2a: e8 00 00 00 00 callq 2f <main+0x2f>
+21.  2b: R\_X86\_64\_PLT32 exit-0x4
+22.  2f: c7 45 fc 00 00 00 00 movl $0x0,-0x4(%rbp)
+23.  36: eb 48 jmp 80 <main+0x80>
+24.  38: 48 8b 45 e0 mov -0x20(%rbp),%rax
+25.  3c: 48 83 c0 10 add $0x10,%rax
+26.  40: 48 8b 10 mov (%rax),%rdx
+27.  43: 48 8b 45 e0 mov -0x20(%rbp),%rax
+28.  47: 48 83 c0 08 add $0x8,%rax
+29.  4b: 48 8b 00 mov (%rax),%rax
+30.  4e: 48 89 c6 mov %rax,%rsi
+31.  51: 48 8d 3d 00 00 00 00 lea 0x0(%rip),%rdi \# 58 <main+0x58>
+32.  54: R\_X86\_64\_PC32 .rodata+0x22
+33.  58: b8 00 00 00 00 mov $0x0,%eax
+34.  5d: e8 00 00 00 00 callq 62 <main+0x62>
+35.  5e: R\_X86\_64\_PLT32 printf-0x4
+36.  62: 48 8b 45 e0 mov -0x20(%rbp),%rax
+37.  66: 48 83 c0 18 add $0x18,%rax
+38.  6a: 48 8b 00 mov (%rax),%rax
+39.  6d: 48 89 c7 mov %rax,%rdi
+40.  70: e8 00 00 00 00 callq 75 <main+0x75>
+41.  71: R\_X86\_64\_PLT32 atoi-0x4
+42.  75: 89 c7 mov %eax,%edi
+43.  77: e8 00 00 00 00 callq 7c <main+0x7c>
+44.  78: R\_X86\_64\_PLT32 sleep-0x4
+45.  7c: 83 45 fc 01 addl $0x1,-0x4(%rbp)
+46.  80: 83 7d fc 08 cmpl $0x8,-0x4(%rbp)
+47.  84: 7e b2 jle 38 <main+0x38>
+48.  86: e8 00 00 00 00 callq 8b <main+0x8b>
+49.  87: R\_X86\_64\_PLT32 getchar-0x4
+50.  8b: b8 00 00 00 00 mov $0x0,%eax
+51.  90: c9 leaveq
+52.  91: c3 retq
+```
+
+接下来分析 hello.o 的反汇编，并请与第三章的 hello.s 进行对照分析。通过比较可以发现，以下方面存在区别：控制转移的结构、函数调用的方法：
+
+（1）控制转移的结构
+
+<div align="center">
+  ![image_87c03e24.png](https://www.liangtengyu.com:9998/images/image_87c03e24.png)
+</div>
+
+首先观察 hello.s 的控制转移结构：可以看到编译过程用.L1\\.L2\\.L3 等名称来标记各个段，跳转指令直接描述需要跳转到的段的名称。
+
+（2）函数调用的方法
+
+在 hello.s 中 call 执行后直接加函数名称
+
+<div align="center">
+  ![image_3fb94c9c.png](https://www.liangtengyu.com:9998/images/image_3fb94c9c.png)
+</div>
+
+而在反汇编代码中 call 后的地址就是该条指令下一条执行的地址，并没有函数的首地址。这是因为这些函数需要通过动态链接确定地址，所以当前只是在.rela.text 重定位节中扒皮留了函数的信息，等待动态链接进行调用。
+
+最后来说明机器语言的构成，以汇编语言的映射关系。机器语言是一种二进制的语言，每一条指令、数据都用二进制来表示。汇编语言用了助记符，对于很多指令的二进制编码，用一个字符串来表示，让程序员更容易读懂。另外反汇编代码不仅显示了汇编代码，还显示了二进制代码。综上可以认为机器语言和汇编语言之间的映射是一种一一对应的双射关系。
+
+### 4.5 本章小结
+
+本章着重介绍了汇编的概念和作用，并且以 hello.s 到 hello.o 为例，介绍并分析了课冲定位目标文件的 ELF 格式，以及对 hello.o 进行了解析，将编译的结果 hello.s 与对 hello.o 的反汇编代码进行了比较，了解了汇编代码和反汇编代码一些结构和内容上的区别。通过这些讨论，增强了对汇编过程的理解。
+
+## 第 5 章 链接
+
+### 5.1 链接的概念与作用
+
+概念：汇编过程结束生成 hello.o 文件后，驱动程序运行链接器程序 ld，将 hello.o 和其他一些必要的系统目标文件组合起来，创建一个可执行目标文件。这个过程就是链接。
+
+作用：链接可以将各种代码和数据片段手机并组合策划归纳成一个可以加载到内存并执行的单一文件。它使得分离编译成为可能，可以将一个大型的应用程序分解为更小，更好管理的模块，便于独立修改和编译，链接让程序员能够利用共享库，通过动态链接为程序提供动态的内容。
+
+### 5.2 在 Ubuntu 下链接的命令
+
+<div align="center">
+  ![image_87bc6e71.png](https://www.liangtengyu.com:9998/images/image_87bc6e71.png)
+</div>
+
+### 5.3 可执行目标文件 hello 的格式
+
+分析 hello 的 ELF 格式，用 readelf 等列出其各段的基本信息，包括各段的起始地址，大小等信息
+
+<table>
+  <tbody>
+    <tr>
+      <td>
+        {' '}
+        <p>ELF头</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>字段e_entry给出执行程序时第一条指令的地址</p>{' '}
+      </td>
+      <td rowspan="5">
+        {' '}
+        <p>只读代码段</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>程序头表</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>结构数组</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.init节</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>用于定义_init函数，该函数用来进行可执行目标文件开始执行的初始化工作</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.text节</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>编译后的代码部分</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.rodata节</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>只读数据</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.data节</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>已初始化的全局和静态C变量</p>{' '}
+      </td>
+      <td rowspan="2">
+        {' '}
+        <p>读写数据段</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.bss节</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>未初始化的全局和静态C变量</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.symtab节</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>符号表，存放在程序中定义和引用的函数和全局变量的信息</p>{' '}
+      </td>
+      <td rowspan="5">
+        {' '}
+        <p>无需装入到存储空间的信息</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.debug节</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>一个调试符号表，条目是程序中定义的局部变量和类型定义</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.strtab节</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>一个字符串表，内容包括.symtab和.debug节中的符号表，以及节头部中的节名字</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>.line节</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>原始C源程序中的行号和.text节中机器指令之间的映射</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>节头表</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>每个节的节名、偏移和大小</p>{' '}
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+（1）ELF 头标记了这是一个可执行文件，并给定了可执行文件的入口点地址
+
+<div align="center">
+  ![image_66b92684.png](https://www.liangtengyu.com:9998/images/image_66b92684.png)
+</div>
+
+（2）节头表给定了各个部分具体的信息与具体的地址
+
+<div align="center">
+  ![image_0a820259.png](https://www.liangtengyu.com:9998/images/image_0a820259.png)
+</div>
+
+（3）程序头表，给定了各个部分的具体信息，包括虚拟地址与物理地址
+
+<div align="center">
+  ![image_9e13f305.png](https://www.liangtengyu.com:9998/images/image_9e13f305.png)
+</div>
+
+### 5.4 hello 的虚拟地址空间
+
+使用 edb 加载 hello，查看本进程的虚拟地址空间各段信息，并与 5.3 对照分析说明。
+
+<div align="center">
+  ![image_529a2825.png](https://www.liangtengyu.com:9998/images/image_529a2825.png)
+</div>
+
+根据下图，可以看出 hello 的虚拟内存地址从 0x401000 开始
+
+<div align="center">
+  ![image_0ee682a3.png](https://www.liangtengyu.com:9998/images/image_0ee682a3.png)
+</div>
+
+从上图中可以看出  
+（1）.init 节，起始地址为 0x401000，大小为 0x1b
+
+<div align="center">
+  ![image_471d803a.png](https://www.liangtengyu.com:9998/images/image_471d803a.png)
+</div>
+
+（2）.plt 节，起始地址 0x401020，大小为 0x70
+
+<div align="center">
+  ![image_efbd1cfe.png](https://www.liangtengyu.com:9998/images/image_efbd1cfe.png)
+</div>
+
+（3）.plt.sec 节，起始地址为 0x401090，大小为 0x60
+
+<div align="center">
+  ![image_f7227ecf.png](https://www.liangtengyu.com:9998/images/image_f7227ecf.png)
+</div>
+
+<div align="center">
+  ![image_91d90205.png](https://www.liangtengyu.com:9998/images/image_91d90205.png)
+</div>
+
+（4）.text 节，起始地址为 0x4010f0，大小为 0x147
+
+<div align="center">
+  ![image_7ea02243.png](https://www.liangtengyu.com:9998/images/image_7ea02243.png)
+</div>
+
+### 5.5 链接的重定位过程分析
+
+objdump -d -r hello 分析 hello 与 hello.o 的不同，说明链接的过程。
+
+<div align="center">
+  ![image_d3206f14.png](https://www.liangtengyu.com:9998/images/image_d3206f14.png)
+</div>
+
+通过 objdump -S hello.o > hello_o.asm 输出 hello.o 的反汇编文件，通过 objdump -S hello > hello.asm 输出 hello 的反汇编文件
+
+（1）hello 与 hello.o 的不同以及链接的过程
+
+首先看到 helllo 反汇编得到的文件中，对于每一条指令、节、函数，都有了一个以 0x40 开头的虚拟地址，而 hello.o 反汇编得到的文件中，哎相应的位置都是由相对偏移来表示的。
+
+可以观察到 hello 反汇编出的文件多出了很多内容，包括.init, .plt, .plt.sec, fini 节等等。而 hello_o.asm 中只有.text 节。
+
+（2）链接的过程
+
+i.符号解析。程序中有定义和引用的符号，存放在符号 表.symtab 节中。这是一个结构数组，存放在程序中定义和引用的函数和全局 变量的信息。编译器将符号的引用存放在重定位节.rel.text 节以及.rel.data 节中， 链接器将每一个符号的引用都与一个确定的符号定义建立关联。
+
+ii.重定位。将 多个代码段和数据段分别合并为一个完整的代码段和数据段，计算每一个定义 的符号在虚拟地址空间的绝对地址而不是相对偏移量，将可执行文件中的符号引用处修改为重定位后的地址信息。
+
+（3）符号的重定位过程
+
+<div align="center">
+  ![image_7a0a0afb.png](https://www.liangtengyu.com:9998/images/image_7a0a0afb.png)
+</div>
+
+下图是链接器重定位算法的伪代码。假设每个节 s 是一个字节数组，每个 重定位条目 r 是一个类型为 Elf64_Rela 的结构，定义如下。另外，假设算法运行时，链接器已经为每个节（用 ADDR(s)表示）和每个符号都选择了 运行时地址（用 ADDR(r.symbol)表示）。算法首先计算需要被重定位的 4 字节引用的数组 s 中的地址。如果这个引用是 PC 相对寻址，则用第一个 if 结构进行处理。如果该引用使用的是绝对寻址，则通过第二个 if 结构处理。
+
+<div align="center">
+  ![image_8b667b22.png](https://www.liangtengyu.com:9998/images/image_8b667b22.png)
+</div>
+
+以 hello 中的 sleep 为例，sleep 位于 r.offset 0x78 的位置，调用的偏移值 r.append=-4
+
+在 hello 的反汇编未见中，查找到 sleep 的首地址为 0x4010e4，即 ADDR(r.symbol) = 0x4010e
+
+<div align="center">
+  ![image_170d10f7.png](https://www.liangtengyu.com:9998/images/image_170d10f7.png)
+</div>
+
+refaddr = ADDR(S)+r.offset = 4011a5 + 0x78 = 0x40121d
+
+然后更新引用
+
+\*ref = (unsigned)((ADDR(r.symbol)+r.addend-refaddr)
+
+= (unsigned)(0x4020e0) +(-4) -0x40121d
+
+= (unsigned)(0xfffffebf)
+
+验证与 hello 的反汇编偏移一致
+
+### 5.6 hello 的执行流程
+
+使用 edb 执行 hello，说明从加载 hello 到\_start，到 call main,以及程序终止的所有过程。请列出其调用与跳转的各个子程序名或程序地址。
+
+<table>
+  <tbody>
+    <tr>
+      <td>
+        {' '}
+        <p>函数名</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>地址</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>&lt;do_init&gt;</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>0x00007f3f02e9edf0</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>&lt;hello!_start&gt;</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>0x00000000004010d0</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>libc-2.31.so!__libc_start_main&gt;</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>0x00007f3f02cbafc0</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>&lt; libc-2.31.so!__cxa_atexit&gt;</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>0x00007f3f02cddf60</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>&lt; hello!__libc_csu_init&gt;</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>0x0000000000401190</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>&lt; libc-2.31.so!_setjmp&gt;</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>0x00007f3f02cd9e00</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>&lt; hello!main&gt;</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>0x0000000000401105</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>&lt; hello!puts@plt&gt;</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>0x0000000000401030</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>&lt; hello!exit@plt&gt;</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>0x0000000000401060</p>{' '}
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+### 5.7 Hello 的动态链接分析
+
+对于动态共享库中的 PIC 函数，编译器无法预测这个函数的运行时地址，因为定义它的共享模块在运行时可以加载到任何位置，一般是为该引用生成一条重定 位记录，然后动态链接器在程序加载的时候再解析它。编译器使用延迟绑定的技 术将过程地址的绑定推迟到第一次调用过程时。延迟绑定通过 GOT 和过程链接表 （PLT）这两个数据结构的交互来实现。GOT 是数据段的一部分，PLT 是代码段的 一部分。GOT 和 PLT 通过协作在运行时解析函数的地址。 GOT 和 PLT 在 dl_init 被第一次调用时，延迟解析它的运行时地址的步骤：
+
+1. 不直接调用 dl_init，程序调用进入 PLT\[2\]，这是 dl_init 的 PLT 条目。
+
+2. 第一条 PLT 指令通过 GOT\[4\]进行间接跳转。因为每个 GOT 条目初始时都指向 它对应的 PLT 条目的第二条指令，这个间接跳转只是简单地把控制传送回 PLT\[2\]中的下一条指令。
+
+3. 在把 dl_init 的 ID 压入栈中之后，PLT\[2\]跳转到 PLT\[0\]。
+
+4. PLT\[0\]通过 GOT\[1\]间接地把动态链接器的一个参数压入栈中，然后通过 GOT\[2\] 间接跳转进动态链接器中。动态链接器使用两个栈条目来确定 dl_init 的运行时位置，用这个地址重写 GOT\[4\]，再把控制流传递给 dl_init。
+
+### 5.8 本章小结
+
+本章介绍了链接的概念和作用，以及以 hello 为例，分析了可执行文件的 ELF 格式、虚拟地址空间、将 hello 的反汇编文件进行比较，并具体计算了重定位的过程与动态链接的过程。
+
+## 第 6 章 hello 进程管理
+
+### 6.1 进程的概念与作用
+
+概念：进程就是一个执行中程序的实例。是计算机中的程序关于某数据集合 上的一次运行活动，是系统进行资源分配和调度的基本单位，是操作系统结构的 基础。
+
+作用：在现代系统上运行一个程序时，进程会提供一个假象，好像我们的程序是系统中当前运行的唯一的程序一样。程序好像是独占地适用处理器和内存， 处理器就好像是无间断地一条接一条地执行我们程序中的指令，而且程序中的代 码和数据好像是系统内存中唯一的对象。进程提供给程序的关键抽象，一是一个 独立的逻辑控制流，它提供一个假象，好像我们的程序独占地适用处理器。二是一个私有的地址空间，它提供一个假象，好像我们的程序独占地适用内存系统。
+
+### 6.2 简述壳 Shell-bash 的作用与处理流程
+
+作用： shell 最重要的功能是命令解释。shell 是一个命令解释器。用户提交了一个命令后，shell 首先判断它是否为内置命令，如果是就通过 shell 内部的解释器将其解 释为系统功能调用并转交给内核执行；若是外部命令或使用程序就试图在硬盘中 查找该命令并将其调入内存，再将其解释为系统功能调用并转交给内核执行。
+
+处理流程： shell 打印一个命令行提示符，等待用户在 stdin 上输入命令行，然后对这个命令行求值。命令行求值的首要任务是调用 parseline 函数，这个函数解析了以空格 分割的命令行参数，并构造最终会传递给 execve 的 argv 向量。第一个参数被假设 为要么是一个内置的 shell 命令名，马上就会解释这个命令，要么是一个可执行目 标文件，会在一个新的子进程的上下文中加载并运行这个文件。 在解析了命令行之后，eval 函数调用 builtin_command 函数，该函数检查第一个命令行参数是否是一个内置的 shell 命令。如果是，它就会易理解释这个命令， 并返回值 1。否则返回 0，shell 创建一个子进程，并在子进程中执行所请求的程序。 如果用户要求在后台印象该程序，那么 shell 返回到循环的顶部，等待下一个命令行。否则，shell 使用 waitpid 函数等待作业终止。当作业终止时，shell 就回收子进程，并开始下一轮迭代。
+
+### 6.3 Hello 的 fork 进程创建过程
+
+父进程通过调用 fork 函数创建一个新的运行的子进程。fork 函数只被调用一 次，但会返回两次。一次是在调用进程中，一次是在新创建的子进程中。在父进程中，fork 返回子进程的 pid，在子进程中，fork 返回 0。
+
+创建过程：
+
+1. 给新进程分配一个标识符。
+
+2. 在内核中分配一个 PCB（进程管理块），将其挂在 PCB 表上。
+
+3. 复制它的父进程的环境（PCB 中大部分的内容）。
+
+4. 为其分配资源（程序、数据、栈等）。
+
+5. 复制父进程地址空间里的内容（代码共享，数据写时拷贝）。
+
+6. 将进程设置成就绪状态，并将其放入就绪队列，等待 CPU 调度。
+
+### 6.4 Hello 的 execve 过程
+
+1.  int execve(const char \*filename, const char \*argv\[\], const char \*envp\[\]);
+
+execve 函数在当前进程的上下文加载并运行一个新的程序。execve 函数加载并运行可执行目标文件 filename，且带参数列表 argv 和环境变量 envp 只有出现错误的时候 execve 才会返回到调用程序。所以，execve 调用一次从不返回。在 execve 加载了 filename 后，调用启动代码，启动代码设置栈，并将控制转移传递给新程序的主函数。  
+当 main 开始执行的时候，用户栈的组织结构如下。从从栈底（高地址）往栈顶（低 地址）依次观察。首先是参数和环境字符串。栈往上是以 null 结尾的指针数组， 其中每个指针都指向栈中的一个环境变量字符串。全局变量 environ 指向这些指针 中的第一个 envp\[0\]。紧随环境变量数组之后的是以 null 结尾的 argv\[\]数组，其中 每个元素都指向栈中的一个参数字符串。在栈的顶部是系统启动函数 libc_start_main 的栈帧。
+
+<div align="center">
+  ![image_151d1c52.png](https://www.liangtengyu.com:9998/images/image_151d1c52.png)
+</div>
+
+### 6.5 Hello 的进程执行
+
+进程的上下文：上下文是由程序正确运行所需的状态组成的。这个状态包括
+
+存放在内存中的程序的代码和数据，它的栈、通用目的寄存器的内容、程序计数 器、环境变量以及打开文件描述符的集合。
+
+进程时间片：一个进程执行它的控制流的一部分的每一个时间段叫做时间片。
+
+进程的调度：在进程执行的某些时刻，内核可以决定抢占当前进程，并重新开始一个先前被抢占了的进程。当内核选择一个新的进程运行时，就说内核调度了这个进程。当内核调度了一个新的进程运行后，它就抢占当前进程，并通过上下文切换的机制将控制转移到新的进程。上下文切换会保存当前进程的上下文，恢复某个先前被抢占的进程被保存的上下文，将控制传递给这个新恢复的进程。当内核代表用户执行系统调用时，可能会发生上下文切换。如果系统调用因为等 待某个时间发生而阻塞，那么内核可以让当前进程休眠，切换到另一个进程。中 断也可能引发上下文切换。 用户态与内核态的转换：进程为 hello 程序分配了虚拟地址空间，并将 hello 的代码节和数据节分配到虚拟地址空间的代码区和数据区。首先 hello 在用户模式下运行，调用系统函数 sleep，显式地请求让调用进程休眠。这时就发生了进程的调度。用户模式和内核模式的转换示意图如下：
+
+### 6.6 hello 的异常与信号处理
+
+（1）异常
+
+hello 的异常（中断、陷阱）以及其处理方式。
+
+hello 执行过程中可能出现四类异常:中断、陷阱、故障和终止。
+
+(1) 中断是来自 I/O 设备的信号,异步发生,中断处理程序对其进行处理,返
+
+回后继续执行调用前待执行的下一条代码,就像没有发生过中断。
+
+(2) 陷阱是有意的异常,是执行一条指令的结果,调用后也会返回到下一条指
+
+令,用来调用内核的服务进行操作。帮助程序从用户模式切换到内核模式。
+
+(3) 故障是由错误情况引起的,它可能能够被故障处理程序修正。如果修正成
+
+功,则将控制返回到引起故障的指令,否则将终止程序。
+
+(4) 终止是不可恢复的致命错误造成的结果,通常是一些硬件的错误,处理程
+
+序会将控制返回给一个 abort 例程,该例程会终止这个应用程序。
+
+（2）信号
+
+linux 中存在的信号格式如图所示
+
+<div align="center">
+  ![image_f94dc5a5.png](https://www.liangtengyu.com:9998/images/image_f94dc5a5.png)
+</div>
+
+linux 发送信号的方式共有四种，分别是 1.利用/bin/kill 发送信号。2.从键盘发送信号，在键盘上输入 Ctrl+C 会导致内核发送一个 SOGINT 信号到前台进程组中的每个进程。默认情况下，结果是终止前台作业。输入 Ctrl+Z 会发送一个 SIGTSTP 的信号到前台进程组中的每个进程，默认情况下是挂起前台作业。3.通过 kill 函数发送信 4.通过 alarm 函数发送信号
+
+在 hello 程序的运行过程中，测试 SIGSTP、SIGINT 信号  
+(1) SIGTSTP：在 hello 在前台运行的时候，按下 ctrl+z 会向其发送 SIGTSTP 信号，这个进程就会暂时挂起
+
+<div align="center">
+  ![image_729ffde5.png](https://www.liangtengyu.com:9998/images/image_729ffde5.png)
+</div>
+
+(2) SIGINT：在 hello 的前台运行的时候，按下 Ctrl+C 会向它发送 SIGINT 信号，这个进程就会被终止
+
+<div align="center">
+  ![image_1c71449e.png](https://www.liangtengyu.com:9998/images/image_1c71449e.png)
+</div>
+
+(3) 在 hello 程序运行的后方加入&符号，就可以让程序在后台运行
+
+<div align="center">
+  ![image_3e4381df.png](https://www.liangtengyu.com:9998/images/image_3e4381df.png)
+</div>
+
+(4) 利用 ps 查看当前的进程
+
+<div align="center">
+  ![image_8523359e.png](https://www.liangtengyu.com:9998/images/image_8523359e.png)
+</div>
+
+(5) 利用 jobs 显示任务列表和任务状态
+
+<div align="center">
+  ![image_480323b1.png](https://www.liangtengyu.com:9998/images/image_480323b1.png)
+</div>
+
+(6) 利用 pstree 查看进程树之间的关系
+
+<div align="center">
+  ![image_d0966359.png](https://www.liangtengyu.com:9998/images/image_d0966359.png)
+</div>
+
+(7) 运行过程中乱按键盘不会影响程序的运行
+
+### 6.7 本章小结
+
+这一章主要应用异常控制流与信号控制对应用程序进行操作，主要讲述应用程如何与操作系统进行交互，这些交互都是围绕着异常控制流与信号处理。异常位于硬件和操作系统交接的部分。系统调用是为应用程序提供到操作系统的入口点的异常。还有进程和信号，它们位于应用和操作系统的交界之处。
+
+## 第 7 章 hello 的存储管理
+
+### 7.1 hello 的存储器地址空间
+
+逻辑地址：指由程序产生的段内偏移地址。要经过寻址方式的计算才能得到内存储器中的实际有效地址。在 hello 中，生成的 hello.o 文件中的地址即偏移量，都是逻辑地址。
+
+线性地址：指虚拟地址到物理地址变换的中间层，是处理器可寻址的内存空间（称为线性地址空间）中的地址。程序代码会产生逻辑地址，或者说段中的偏移地址，加上相应段基址就成了一个线性地址。如果启用了分页机制，那么线性地址可以再经过变换产生物理地址。若是没有采用分页机制，那么线性地址就是物理地址。
+
+虚拟地址：是逻辑地址到物理地址变换之间的中间层。在分段部件中逻辑地
+
+址是段中的偏移地址，然后加上基地址就是线性地址。通常是一个 32 为无符号整 数，可以用来表示 4GB 的地址。线性地址通常用十六进制数字表示。程序会产生逻辑地址，通过变换就可以生成线性地址，如果有分页机制，则线性地址可以再映射出一个物理地址。在 hello 中，对 hello 可执行文件进行反汇编得到的文本文件中的地址都是虚拟地址，在这里也就是线性地址。
+
+物理地址：CPU 地址总线传来的地址，由硬件电路控制。物理地址中很大一部分是留给内存条中的内存的，但也常被映射到其他存储器上（如显存、BIOS 等）。
+
+### 7.2 Intel 逻辑地址到线性地址的变换-段式管理
+
+在 Intel 平台下，逻辑地址是 selector:offset 这种形式，selector 是 CS 寄存器的值，offset 是 EIP 寄存器的值。如果用 selector 去 GDT 全局描述符表里拿到 segment base address(段基址) 然后加上 offset(段内偏移)，这就得到了线性地址。我们把这个过程称作段式内存管理。
+
+一个逻辑地址由段标识符和段内偏移量组成。段标识符是一个 16 位长的字段（段选择符）。可以通过段标识符的前 13 位，直接在段描述符表中找到一个具体的段描述符，这个描述符就描述了一个段。
+
+全局的段描述符，放在“全局段描述符表(GDT)”中，一些局部的段描述符，放在“局部段描述符表(LDT)”中。给定一个完整的逻辑地址段选择符+段内偏移地址，看段选择符的 T1=0 还是 1，知道当前要转换是 GDT 中的段，还是 LDT 中的段，再根据相应寄存器，得到其地址和大小。拿出段选择符中前 13 位，可以在这个数组中，查找到对应的段描述符，就得到了其基地址。Base + offset = 线性地址。
+
+<div align="center">
+  ![image_7cd325ab.png](https://www.liangtengyu.com:9998/images/image_7cd325ab.png)
+</div>
+
+### 7.3 Hello 的线性地址到物理地址的变换-页式管理
+
+线性地址向物理地址的转换过程如下：首先，根据控制寄存器 CR3 给出的页目录表首地址找到页目录表，由 DIR 字段提供的页目录索引找到对应的页目录项；然后根据页目录项中的基地址指出的页表首地址找到对应的页表，再根据线性地址中间的页表索引找到页表中的页表项；最后将页表项中的基地址和线性地址中的 12 位页内偏移量组合成 32 位物理地址。
+
+<div align="center">
+  ![image_29150b87.png](https://www.liangtengyu.com:9998/images/image_29150b87.png)
+</div>
+
+### 7.4 TLB 与四级页表支持下的 VA 到 PA 的变换
+
+TLB：翻译后备缓冲器，是在 MMU 中的一个关于 PTE 的小的缓存。TLB 是 一个小的、虚拟寻址的缓存，其中每一行都保存着一个由单个 PTE 组成的块。虚拟地址中用以访问 TLB 的组成部分如下。
+
+<div align="center">
+  ![image_c61cd542.png](https://www.liangtengyu.com:9998/images/image_c61cd542.png)
+</div>
+
+TLB 命中时的地址翻译步骤有：
+
+1. CPU 产生一个虚拟地址。
+
+2. MMU 从 TLB 中取出相应的 PTE。
+
+3. MMU 将这个虚拟地址翻译成一个物理地址，并将它发送到高速缓存或主 存。
+
+4. 高速缓存或主存将所请求的数据字返回给 CPU。
+
+如果 TLB 中没有命中，MMU 向页表中查询，CR3 确定第一级页表的起始地址，VPN1（9bit）确定在第一级页表中的偏移量，查询出 PTE，如果在物理内存中且权限符合，确定第二级页表的起始地址，以此类推，最终在第四级页表中查询到 PPN，与 VPO 组合成 PA，并且向 TLB 中添加条目。
+
+在 Intel Core i7 环境下虚拟地址空间 48 位，物理地址空间 52 位，页表大小 4KB，4 级页表。TLB 4 路 16 组相联。
+
+解析前提条件：由一个页表大小 4KB，一个 PTE 条目 8B，共 512 个条目，使用 9 位二进制索引，一共 4 个页表共使用 36 位二进制索引，所以 VPN 共 36 位，因为 VA 48 位，所以 VPO 12 位；因为 TLB 共 16 组，所以 TLBI 需 4 位，因为 VPN 36 位，所以 TLBT 32 位。
+
+CPU 产生虚拟地址 VA，VA 传送给 MMU，MMU 使用前 36 位 VPN 作为 TLBT（前 32 位）+TLBI（后 4 位）向 TLB 中匹配，如果命中，则得到 PPN（40bit）与 VPO（12bit）组合成 PA（52bit）。
+
+如果查询 PTE 的时候发现不在物理内存中，则引发缺页故障
+
+<div align="center">
+  ![image_46a98db4.png](https://www.liangtengyu.com:9998/images/image_46a98db4.png)
+</div>
+
+### 7.5 三级 Cache 支持下的物理内存访问
+
+L1cache 有 64 组，八路组相连，每块 64 字节。所以块偏移 CO 是 6 位， 组索引 CI 是 6 位，剩下的 40 位为标记 CT。现有物理地址 52 位，低 6 位是 CO， CO 的左边高 6 位是 CI，剩余的是 CT。根据组索引 CI，定位到 L1cache 中的某一 组，遍历这一组中的每一行，如果某一行的有效位为 1 且标记位等于 CT，则命中， 根据块偏移 CO 取出数据。如果未命中，则向下一级 cache 寻找数据。更新 cache 时，首先判断是否有空闲块。如果有，则写入这个块，否则根据替换算法驱逐一个块后再写入。
+
+<div align="center">
+  ![image_39e936a3.png](https://www.liangtengyu.com:9998/images/image_39e936a3.png)
+</div>
+
+### 7.6 hello 进程 fork 时的内存映射
+
+当 fork 函数被当前进程调用时，内核为 hello 进程创建各种数据结构，并分配 给它一个唯一的 PID。为了给 hello 进程创建虚拟内存，它创建了当前进程的 mm_struct、区域结构和页表的原样副本。它将两个进程中的每个页面都标记为只 读，并将两个进程中的每个区域结构都标记为私有的写时复制。 当 fork 在 hello 进程中返回时，hello 进程现在的虚拟内存刚好和调用 fork 时存在的虚拟内存相同。当这两个进程中的任一个后来进行写操作时，写时复制机制就会创建新页面，因此也就为每个进程保持了私有地址空间的抽象概念。
+
+### 7.7 hello 进程 execve 时的内存映射
+
+execve 函数在当前进程中加载并允许包含了可执行文件 hello 中的程序，用 hello 程序有效地替代了当前程序。加载并允许 hello 需要以下一个步骤：
+
+1. 删除已存在的用户区域。删除当前进程虚拟地址的用户部分中的已存在的 区域结构。
+
+2. 映射私有区域。为 hello 程序的代码、数据、bss 和栈区域创建新的区域结 构。
+
+3. 映射共享区域。如果 hello 与共享对象或目标链接，那么这些对象都是动
+
+态链接到这个程序的，然后再映射到用户虚拟地址空间中的共享区域内。  
+4. 设置程序计数器 PC。execve 做的最后一件事情就是设置当前进程上下文 中的程序计数器，使之指向代码区域的入口点。下一次调度这个进程时，它将从这个入口点开始执行。Linux 根据需要换入代码和数据页面。下面是加载器如果映射用户地址空间的区域的示意图。
+
+### 7.8 缺页故障与缺页中断处理
+
+在异常控制流中学过，缺页异常是一种经典的故障。发生故障时，处理器将 控制转移给故障处理程序。如果处理程序额能够修正这个错误的情况，它就将控 制返回到引起故障的指令，重新执行。否则处理程序返回到内核中的 abort 例程， abort 例程会终止引起故障的应用程序。
+
+<div align="center">
+  ![image_63f7f434.png](https://www.liangtengyu.com:9998/images/image_63f7f434.png)
+</div>
+
+一般的缺页情况如下： CPU 引用了 VPi 中的一个字，VPi 并未缓存在物理内存中。地址翻译硬件从内存中读取 PTEi，从有效位推断出 VPi 未被缓存，并且触发了一个缺页异常。缺页异常调用内核中的缺页异常处理程序，该程序选择一个牺牲页，假设是 VPj。如果 VPj 已经被修改了，那个内核就会将它复制回磁盘。无论那种情况，内核都会 修改 VPj 的页表条目，反应出 VPj 不再缓存在主存中。接下来，内核从磁盘复制 VPi 到内存中的 PPi，更新 PTEi，随后返回。当异常处理程序返回时，它会重新启 动导致缺页的指令，该指令会把导致缺页的虚拟地址重发送到地址翻译硬件。现在，VPi 已经缓存在主存中了，那么页命中页能由地址翻译硬件正常处理了。
+
+### 7.9 动态存储分配管理
+
+动态内存分配器维护着一个进程的虚拟内存区域，称为堆。对于每个进程， 内核维护者一个变量 brk，指向堆的顶部。分配器将堆视为一组大小不同的块的集合来维护，且它们的地址是连续的。将块标记为两种，已分配的块供应用程序使用，空闲块用来分配。
+
+（1）隐式空闲链表管理
+
+想要设计好的数据结构维护空闲块需要考虑以下方面：
+
+空闲块组织：利用隐式空闲链表记录空闲块
+
+放置策略：如何选择合适的空闲块分配？
+
+首次适配：从头开始搜索空闲链表，选择第一个合适的空闲块
+
+下一次适配：从上一次查询结束的地方开始搜索选择第一个合适的空闲块
+
+最佳适配：搜索能放下请求大小的最小空闲块
+
+分割：在将一个新分配的块放置到某个空闲块后，剩余的部分要进行处理
+
+合并：释放某个块后，要让它与相邻的空闲块合并
+
+<div align="center">
+  ![image_3c39c3ec.png](https://www.liangtengyu.com:9998/images/image_3c39c3ec.png)
+</div>
+
+空闲块的结构如上图所示，每一个堆块内有一些字，每个字有 4 个字节。第一个字记录这个堆块的 大小，以及是已分配的还是空闲的。这里介绍的堆块是双字对齐的，所以块 大小一定为 8 的倍数，二进制的低第三位是 0。所以用最低位来表示这个块是以分配的还是空闲的。有效载荷就是用户申请的空间，填充是不使用的，大 小任意，填充可能是分配器策略的一部分，用来对付外部碎片，或者用它来满足对齐要求。
+
+（2）显式空闲链表管理
+
+真实的操作系统实际上使用的是显示空闲链表管理。它的思路是维护多个空闲链表，每个链表中的块有大致相等的大小，分配器维护着一个空闲链表数组，每个大小类一个空闲链表，当需要分配块时只需要在对应的空闲链表中搜索就好了，有两种分离存储的方法
+
+简单分离存储：从不合并与分离，每个块的大小就是大小类中最大元素的大小。例如大小类为 \{17~32\}，则需要分配块的大小在这个区间时均在此对应链表进行分配，并且都是分配大小为 32 的块。这样做，显然分配和释放都是常数级的，但是空间利用率较低
+
+分离适配：每个大小类的空闲链表包含大小不同的块，分配完一个块后，将这个块进行分割，并根据剩下的块的大小将其插入到适当大小类的空闲链表中。这个做法平衡了搜索时间与空间利用率，C 标准库提供的 GNU malloc 包就是采用的这种方法。
+
+### 7.10 本章小结
+
+本章重点介绍了计算机中的存储，包括地址空间的分类，地址的变换规则， 虚拟内存的原理，cache 的工作，和动态内存的分配。虚拟内存存在于磁盘中，处 理器产生一个虚拟地址，然后虚拟地址通过页表映射等相关规则被转化为物理地 址，再通过 cache 和主存访问物理地址内保存的内容，返回给处理器。
+
+## 第 8 章 hello 的 IO 管理
+
+### 8.1 Linux 的 IO 设备管理方法
+
+设备的模型化：文件。所有的 I/O 设备（例如网络、磁盘和终端）都被模型化为文件，而所有的输入和输出都被当作对相应文件的读和写来执行。
+
+设备管理： unix io 接口。这种将设备优雅地映射为文件的方式，允许 Linux 内核引出一个简单、低级的应用接口，称为 Unix I/O，这使得所有的输入和输出都能以一种统一且一致的方式来执行。
+
+### 8.2 简述 Unix IO 接口及其函数
+
+在使用过程中经常调用的系统 IO 函数有下列这几个 open()函数，write()函数，read()函数，lseek()函数，close()函数。
+
+（1）open 函数: 打开或创建一个文件。
+
+```c
+#include<fcntl.h>
+
+int open(const char* pathname,int flag, ... /*mode_t mode*/)
+```
+
+我们将第三个参数写为…，是因为 ISO C 用这种方法表明余下的参数机器类型将根据具体的调用有所不同。对于 open 函数，只有在创建新文件的时候才会使用到第三个参数。成功返回一个整型(int)的文件描述符，这个文件描述符可以看作是一个打开文件的钥匙，凡是对文件的操作都离不开它。错误返回-1 这个文件描述符一定是用最小的未使用的描述符数值，其中 0，1，2 分别是标准输入 stdin，标准输出 stdout 和标准出错输出 stderr，所以我们在不修改或者关闭其中三个的情况下，打印出的第一个描述符数值一般是 3。
+
+pathname：要打开或者创建的文件名。
+
+flag：打开方式的选项，用下来一个或多个常量进行或|运算构成的 flag 参数。
+
+选项：O_RDONLY, O_WRONLY, O_RDWR 这三个常量必须有且只能选一个
+
+O_CREAT：文件不存在则创建
+
+O_TRUNC:若文件存在，则把数据清零。
+
+mode：它其实是一个 8 进制数，说明你将要创建文件的权限
+
+（2）write 函数：往打开的文件里面写数据
+
+```c
+#include <unistd.h>
+
+size_t write(int fd, const void *buf, size_t count);
+```
+
+返回值：成功则返回已写的字节数，错误返回-1
+
+fd： open 函数返回的文件描述符
+
+buf： 要写入数据的地址，通常是已声明的字符串的首地址
+
+count：一次要写几个字节，通常为 strlen()个
+
+（3）read 函数: 从打开的设备或文件中读取数据。
+
+```c
+#include <unistd.h>
+
+size_t read(int fd, void *buf, size_t count);
+```
+
+返回值： 成功返回读取的字节数，出错返回-1 并设置 errno，0 表示文件末端如果在调 read 之前已到达文件末尾，则这次 read 返回 0。如果要求读 100 个字节，而离文件末尾只有 99 个字节，则 read 返回 99，下一次再调用 read 返回 0
+
+参数： 可联系 write 函数记忆
+
+fd： 文件描述符
+
+buf： 要读数据的地址，通常是已声明的字符串的首地址
+
+count 一次要读多少个数据
+
+（4）lseek 函数：显式地为一个打开的文件设置偏移量，通常读写操作都是从当前文件偏移量处开始的，并使偏移量增加所读写的字节数
+
+```c
+#include <unistd.h>
+#include <sys/types.h>
+off_t lseek(int fd, off_t offset, int whence);
+```
+
+返回值：成功返回新的文件偏移量注意可能负数，出错返回-1。如果文件 描述符引用的是一个管道，FIFO 或者 网络套接字，则 lseek 返回-1，，并将 error 设置成 ESPIPE
+
+参数：
+
+fd： 文件描述符
+
+offset 的含义取决于参数 whence
+
+### 8.3 printf 的实现分析
+
+```c
+ int printf(const char *fmt, ...)
+ {
+    int i;
+    char buf[256];
+    va_list arg = (va_list)((char*)(&fmt) + 4);
+    i = vsprintf(buf, fmt, arg);
+    write(buf, i);
+    return i;
+ }
+```
+
+vsprintf 函数将所有的参数内容格式化之后存入 buf，返回格式化数组的长度。vsprintf 函数如下：
+
+```c
+int vsprintf(char *buf, const char *fmt, va_list args)
+{
+    char *p;
+    char tmp[256];
+    va_list p_next_arg = args;
+    for (p = buf; *fmt; fmt++)
+    {
+        if (*fmt != '%')
+        {
+            *p++ = *fmt;
+            continue;
+        }
+        fmt++;
+        switch (*fmt)
+        {
+        case 'x':
+            itoa(tmp, *((int *)p_next_arg));
+            strcpy(p, tmp);
+            p_next_arg += 4;
+            p += strlen(tmp);
+            break;
+        case 's':
+            break;
+        default:
+            break;
+        }
+    }
+    return (p - buf);
+}
+
+```
+
+随后 write 函数将参数放入寄存器，然后用 int 21h 调用 sys_call 。sys_call 将字符串中的字节从寄存器中通过总线复制到显卡的显存中，显存中存储的是字符的 ASCII 码。字符显示驱动子程序通过 ASCII 码在字模库中找到点阵信息，并将点阵信息存储到 vram 中。显示芯片会按照一定的刷新频率逐行读取 vram，并通过信号线向液晶显示器传输每一个点（RGB 分量）。最后，hello 程序的输出：hello 就显示在了屏幕上。
+
+### 8.4 getchar 的实现分析
+
+getchar 由宏实现：\#define getchar() getc(stdin)。getchar 有一个 int 型的返回值。 当程序调用 getchar 时，程序就等着用户按键。用户输入的字符被存放在键盘缓冲 区中。直到用户按回车为止。当用户键入回车之后，getchar 才开始从 stdin 流中每次读入一个字符。getchar 函数的返回值是用户输入的字符的 ASCII 码，若文件结 尾则返回-1(EOF)，且将用户输入的字符回显到屏幕。如用户在按回车之前输入了不止一个字符，其他字符会保留在键盘缓存区中，等待后续 getchar 调用读取。
+
+异步异常-键盘中断的处理：键盘中断处理子程序。接受按键扫描码转成 ascii 码，保存到系统的键盘缓冲区。getchar 等调用 read 系统函数，通过系统调用读取按键 ascii 码，直到接受到回车键才返回。
+
+### 8.5 本章小结
+
+本章着重介绍了 Linux 的 IO 设备管理方法，Unix IO 接口及其函数，以及 printf,getchar 的实现和工作过程。
+
+## 结论
+
+至此，hello 顺利的走完了它的一生，让我们为它的一生做一点总结，hello 从编写到运行要经历以下几个部分
+
+(1) hello.c 经过预处理生成预处理文本文件 hello.i  
+(2) hello.i 经过编译，生成汇编文件 hello.s  
+(3) hello.s 经过汇编，生成二进制课冲定位目标文件 hello.o
+
+(4) hello.o 经过链接，生成可执行文件 hello
+
+<div align="center">
+  ![image_d31e2d16.png](https://www.liangtengyu.com:9998/images/image_d31e2d16.png)
+</div>
+
+在 hello 运行的过程中需要在 shell 中通过 fork 创建子进程，通过 execve 加载并运行程序。运行程序的过程中又设计到存储的管理，包括利用程序空间局部性与时间局部性的缓存 cache 与虚拟内存。
+
+总之，hello.c 可能是我们初学程序写的第一份代码，但是却蕴藏着很复杂的知识，从预处理器到编译器到汇编器到链接器到操作系统的处理，汇聚了无数计算机科学家的智慧，让 hello 能够顺利的运行出来，到现代，重要的也已经不是 hello 程序本身，而是在 hello 程序运行过程中的那些闪闪发光的人类智慧。
+
+## 附件
+
+<table>
+  <tbody>
+    <tr>
+      <td>
+        {' '}
+        <p>hello.i</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>对hello.c进行预处理得到的文件</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>hello.s</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>对hello.i进行编译得到的文件</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>hello.o</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>对hello.s进行汇编得到的文件</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>hello</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>对hello.o进行链接得到的可执行文件</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>hello_o.asm</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>对hello.o进行反汇编得到的文件</p>{' '}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {' '}
+        <p>hello.asm</p>{' '}
+      </td>
+      <td>
+        {' '}
+        <p>对hello进行反汇编得到的文件</p>{' '}
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+## 参考文献
+
+\[1\] Randal E. Bryant, David R. O'Hallaon. 深入理解计算机系统. 第三版. 北京市：机 械工业出版社\[M\]. 2018： 1-737.
+
+\[2\] 信号集（未决信号集、阻塞信号集）https://blog.csdn.net/m0\_60663280/article/details/121461762
+
+\[3\] ELF 文件详解 https://blog.csdn.net/daide2012/article/details/73065204
+
+[hello_s p2p]: #%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%20%E5%A4%A7%E4%BD%9C%E4%B8%9A
+[1_]: #%E7%AC%AC1%E7%AB%A0%20%E6%A6%82%E8%BF%B0
+[1.1 hello]: #1.1%20Hello%E7%AE%80%E4%BB%8B
+[1.2]: #1.2%20%E7%8E%AF%E5%A2%83%E4%B8%8E%E5%B7%A5%E5%85%B7
+[1.3]: #1.3%20%E4%B8%AD%E9%97%B4%E7%BB%93%E6%9E%9C
+[1.4 hello.c]: #1.4%20hello.c%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9
+[1.5]: #1.5%20%E6%9C%AC%E7%AB%A0%E5%B0%8F%E7%BB%93
+[2_]: #%E7%AC%AC2%E7%AB%A0%20%E9%A2%84%E5%A4%84%E7%90%86
+[2.1]: #2.1%20%E9%A2%84%E5%A4%84%E7%90%86%E7%9A%84%E6%A6%82%E5%BF%B5%E4%B8%8E%E4%BD%9C%E7%94%A8
+[2.2_ubuntu]: #2.2%E5%9C%A8Ubuntu%E4%B8%8B%E9%A2%84%E5%A4%84%E7%90%86%E7%9A%84%E5%91%BD%E4%BB%A4
+[2.3 hello_]: #2.3%20Hello%E7%9A%84%E9%A2%84%E5%A4%84%E7%90%86%E7%BB%93%E6%9E%9C%E8%A7%A3%E6%9E%90%C2%A0%C2%A0
+[2.4]: #2.4%20%E6%9C%AC%E7%AB%A0%E5%B0%8F%E7%BB%93
+[3_]: #%E7%AC%AC3%E7%AB%A0%20%E7%BC%96%E8%AF%91
+[3.1]: #3.1%20%E7%BC%96%E8%AF%91%E7%9A%84%E6%A6%82%E5%BF%B5%E4%B8%8E%E4%BD%9C%E7%94%A8
+[3.2 _ubuntu]: #3.2%20%E5%9C%A8Ubuntu%E4%B8%8B%E7%BC%96%E8%AF%91%E7%9A%84%E5%91%BD%E4%BB%A4
+[3.3 hello]: #3.3%20Hello%E7%9A%84%E7%BC%96%E8%AF%91%E7%BB%93%E6%9E%9C%E8%A7%A3%E6%9E%90
+[3.4]: #3.4%20%E6%9C%AC%E7%AB%A0%E5%B0%8F%E7%BB%93
+[4_]: #%E7%AC%AC4%E7%AB%A0%20%E6%B1%87%E7%BC%96
+[4.1]: #4.1%20%E6%B1%87%E7%BC%96%E7%9A%84%E6%A6%82%E5%BF%B5%E4%B8%8E%E4%BD%9C%E7%94%A8
+[4.2 _ubuntu]: #4.2%20%E5%9C%A8Ubuntu%E4%B8%8B%E6%B1%87%E7%BC%96%E7%9A%84%E5%91%BD%E4%BB%A4
+[4.3 _elf]: #4.3%20%E5%8F%AF%E9%87%8D%E5%AE%9A%E4%BD%8D%E7%9B%AE%E6%A0%87elf%E6%A0%BC%E5%BC%8F
+[4.4 hello.o]: #4.4%20Hello.o%E7%9A%84%E7%BB%93%E6%9E%9C%E8%A7%A3%E6%9E%90
+[4.5]: #4.5%20%E6%9C%AC%E7%AB%A0%E5%B0%8F%E7%BB%93
+[5_]: #%E7%AC%AC5%E7%AB%A0%20%E9%93%BE%E6%8E%A5
+[5.1]: #5.1%20%E9%93%BE%E6%8E%A5%E7%9A%84%E6%A6%82%E5%BF%B5%E4%B8%8E%E4%BD%9C%E7%94%A8
+[5.2 _ubuntu]: #5.2%20%E5%9C%A8Ubuntu%E4%B8%8B%E9%93%BE%E6%8E%A5%E7%9A%84%E5%91%BD%E4%BB%A4
+[5.3 _hello]: #5.3%20%E5%8F%AF%E6%89%A7%E8%A1%8C%E7%9B%AE%E6%A0%87%E6%96%87%E4%BB%B6hello%E7%9A%84%E6%A0%BC%E5%BC%8F
+[5.4 hello]: #5.4%20hello%E7%9A%84%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4
+[5.5]: #5.5%20%E9%93%BE%E6%8E%A5%E7%9A%84%E9%87%8D%E5%AE%9A%E4%BD%8D%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90
+[5.6 hello]: #5.6%20hello%E7%9A%84%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B
+[5.7 hello]: #5.7%20Hello%E7%9A%84%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%88%86%E6%9E%90
+[5.8]: #5.8%20%E6%9C%AC%E7%AB%A0%E5%B0%8F%E7%BB%93
+[6_ hello]: #%E7%AC%AC6%E7%AB%A0%20hello%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86
+[6.1]: #6.1%20%E8%BF%9B%E7%A8%8B%E7%9A%84%E6%A6%82%E5%BF%B5%E4%B8%8E%E4%BD%9C%E7%94%A8
+[6.2 _shell-bash]: #6.2%20%E7%AE%80%E8%BF%B0%E5%A3%B3Shell-bash%E7%9A%84%E4%BD%9C%E7%94%A8%E4%B8%8E%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B
+[6.3 hello_fork]: #6.3%20Hello%E7%9A%84fork%E8%BF%9B%E7%A8%8B%E5%88%9B%E5%BB%BA%E8%BF%87%E7%A8%8B
+[6.4 hello_execve_]: #6.4%20Hello%E7%9A%84execve%E8%BF%87%E7%A8%8B%C2%A0%C2%A0
+[6.5 hello]: #6.5%20Hello%E7%9A%84%E8%BF%9B%E7%A8%8B%E6%89%A7%E8%A1%8C
+[6.6 hello]: #6.6%20hello%E7%9A%84%E5%BC%82%E5%B8%B8%E4%B8%8E%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86
+[6.7]: #6.7%E6%9C%AC%E7%AB%A0%E5%B0%8F%E7%BB%93
+[7_ hello]: #%E7%AC%AC7%E7%AB%A0%20hello%E7%9A%84%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86
+[7.1 hello]: #7.1%20hello%E7%9A%84%E5%AD%98%E5%82%A8%E5%99%A8%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4
+[7.2 intel_-]: #7.2%20Intel%E9%80%BB%E8%BE%91%E5%9C%B0%E5%9D%80%E5%88%B0%E7%BA%BF%E6%80%A7%E5%9C%B0%E5%9D%80%E7%9A%84%E5%8F%98%E6%8D%A2-%E6%AE%B5%E5%BC%8F%E7%AE%A1%E7%90%86
+[7.3 hello_-]: #7.3%20Hello%E7%9A%84%E7%BA%BF%E6%80%A7%E5%9C%B0%E5%9D%80%E5%88%B0%E7%89%A9%E7%90%86%E5%9C%B0%E5%9D%80%E7%9A%84%E5%8F%98%E6%8D%A2-%E9%A1%B5%E5%BC%8F%E7%AE%A1%E7%90%86
+[7.4 tlb_va_pa]: #7.4%20TLB%E4%B8%8E%E5%9B%9B%E7%BA%A7%E9%A1%B5%E8%A1%A8%E6%94%AF%E6%8C%81%E4%B8%8B%E7%9A%84VA%E5%88%B0PA%E7%9A%84%E5%8F%98%E6%8D%A2
+[7.5 _cache]: #7.5%20%E4%B8%89%E7%BA%A7Cache%E6%94%AF%E6%8C%81%E4%B8%8B%E7%9A%84%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98%E8%AE%BF%E9%97%AE
+[7.6 hello_fork]: #7.6%20hello%E8%BF%9B%E7%A8%8Bfork%E6%97%B6%E7%9A%84%E5%86%85%E5%AD%98%E6%98%A0%E5%B0%84
+[7.7 hello_execve]: #7.7%20hello%E8%BF%9B%E7%A8%8Bexecve%E6%97%B6%E7%9A%84%E5%86%85%E5%AD%98%E6%98%A0%E5%B0%84
+[7.8]: #7.8%20%E7%BC%BA%E9%A1%B5%E6%95%85%E9%9A%9C%E4%B8%8E%E7%BC%BA%E9%A1%B5%E4%B8%AD%E6%96%AD%E5%A4%84%E7%90%86
+[7.9]: #7.9%E5%8A%A8%E6%80%81%E5%AD%98%E5%82%A8%E5%88%86%E9%85%8D%E7%AE%A1%E7%90%86
+[7.10]: #7.10%E6%9C%AC%E7%AB%A0%E5%B0%8F%E7%BB%93
+[8_ hello_io]: #%E7%AC%AC8%E7%AB%A0%20hello%E7%9A%84IO%E7%AE%A1%E7%90%86
+[8.1 linux_io]: #8.1%20Linux%E7%9A%84IO%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86%E6%96%B9%E6%B3%95
+[8.2 _unix io]: #8.2%20%E7%AE%80%E8%BF%B0Unix%20IO%E6%8E%A5%E5%8F%A3%E5%8F%8A%E5%85%B6%E5%87%BD%E6%95%B0
+[8.3 printf]: #8.3%20printf%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%88%86%E6%9E%90
+[8.4 getchar]: #8.4%20getchar%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%88%86%E6%9E%90
+[8.5]: #8.5%E6%9C%AC%E7%AB%A0%E5%B0%8F%E7%BB%93
+[link 1]: #%E7%BB%93%E8%AE%BA
+[link 2]: #%E9%99%84%E4%BB%B6
+[link 3]: #%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE
