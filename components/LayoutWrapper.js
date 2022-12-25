@@ -12,11 +12,10 @@ import { twemoji } from 'twemoji'
 
 const LayoutWrapper = ({ children }) => {
   const router = useRouter()
-
   return (
-    <SectionContainer>
-      <div className="flex flex-col justify-between h-screen">
-        <header className="flex items-center justify-between py-6">
+    <>
+      <header className="sticky top-0 flex-none py-3 backdrop-blur z-40 bg-white/75 dark:bg-black/10">
+        <div className="mx-auto max-w-3xl xl:max-w-5xl flex items-center justify-between px-3 xl:px-0">
           <div>
             <Link href="/" aria-label="Ultramarine's website">
               <div className="flex items-center justify-between text-xl font-semibold text-primary-color dark:text-primary-color-dark">
@@ -46,11 +45,15 @@ const LayoutWrapper = ({ children }) => {
             <ThemeSwitch />
             <MobileNav />
           </div>
-        </header>
-        <main className="relative mb-auto">{children}</main>
-        <Footer />
+        </div>
+      </header>
+      <div className="max-w-3xl px-3 xl:px-0 mx-auto sm:px-6 xl:max-w-5xl">
+        <div className="flex flex-col justify-between h-screen">
+          <main className="relative mb-auto">{children}</main>
+          <Footer />
+        </div>
       </div>
-    </SectionContainer>
+    </>
   )
 }
 

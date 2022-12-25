@@ -4,7 +4,6 @@ import '@/css/twemoji.css'
 
 import { ThemeProvider } from 'next-themes'
 import Head from 'next/head'
-
 import siteMetadata from '@/data/siteMetadata'
 import Analytics from '@/components/analytics'
 import LayoutWrapper from '@/components/LayoutWrapper'

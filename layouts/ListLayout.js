@@ -30,7 +30,7 @@ export default function ListLayout({ posts, title, initialDisplayPosts = [], pag
                 type="text"
                 onChange={(e) => setSearchValue(e.target.value)}
                 placeholder="Search articles"
-                className="block w-full px-4 py-2 text-slate-900 bg-white border border-gray-300 rounded-md dark:border-gray-900 focus:ring-primary-color focus:border-primary-color dark:focus:ring-primary-color-dark dark:focus:border-primary-color-dark dark:bg-gray-800 dark:text-slate-100"
+                className="block w-full px-4 py-2 text-slate-900 bg-white border border-gray-300 rounded-md dark:border-gray-900 focus:ring-primary-color focus:border-primary-color dark:focus:ring-primary-color-dark dark:focus:border-primary-color-dark dark:bg-slate-800 dark:text-slate-100"
               />
               <svg
                 className="absolute w-5 h-5 text-gray-400 right-3 top-3 dark:text-gray-300"

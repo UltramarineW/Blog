@@ -86,7 +86,7 @@ export default function AuthorLayout({ children, frontMatter }) {
               GitHub Page:{'   '}
               <Link
                 href={'https://github.com/UltramarineW'}
-                className="text-slate-1000 dark:text-slate-200"
+                className="text-slate-1000 dark:text-sky-200"
               >
                 UltramarineW
               </Link>
