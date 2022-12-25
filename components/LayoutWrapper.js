@@ -9,6 +9,7 @@ import NowPlaying from './NowPlaying'
 import Typewriter from 'typewriter-effect'
 import { useRouter } from 'next/router'
 import { twemoji } from 'twemoji'
+import Image from '@/components/Image'
 
 const LayoutWrapper = ({ children }) => {
   const router = useRouter()
@@ -17,7 +18,7 @@ const LayoutWrapper = ({ children }) => {
   let MAIN_CONTENT_MIN_HEIGHT = `calc(100vh - ${HEADER_HEIGHT} - ${FOOTER_HEIGHT})`
   return (
     <>
-      <header className="md:sticky top-0 md:overflow-x-hidden flex-none pb-3 pt-6 supports-backdrop-blur:bg-white/95 backdrop-blur z-40 bg-white/75 dark:bg-[#111827]/60">
+      <header className="md:sticky top-0 md:overflow-x-hidden flex-none pb-4 pt-4 supports-backdrop-blur:bg-white/95 backdrop-blur z-40 bg-white/75 dark:bg-[#111827]/60">
         <div className=" mx-auto max-w-3xl xl:max-w-5xl flex items-center justify-between px-3 xl:px-0">
           <div>
             <Link href="/" aria-label="Ultramarine's website">
